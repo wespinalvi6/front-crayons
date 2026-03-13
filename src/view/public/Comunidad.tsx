@@ -1,5 +1,5 @@
-import { Users, Heart, Star, GraduationCap, MessageSquare, ArrowRight, CheckCircle2, ChevronRight, UserCircle } from "lucide-react";
-import React, { useState, useEffect } from 'react';
+import { Users, Heart, Star, GraduationCap, MessageSquare, CheckCircle2, ChevronRight, UserCircle } from "lucide-react";
+import { useState, useEffect } from 'react';
 
 const Comunidad = () => {
     const [isLoaded, setIsLoaded] = useState(false);

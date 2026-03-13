@@ -1,5 +1,5 @@
 import { Palette, Music, Theater, Camera, Sparkles, ChevronRight, PlayCircle, Heart } from "lucide-react";
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 const ArteCultura = () => {
     const [isLoaded, setIsLoaded] = useState(false);

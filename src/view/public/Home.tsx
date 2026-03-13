@@ -61,10 +61,7 @@ const HomePage = () => {
     {
       title: "Comunidad",
       items: [
-        { name: "Alumnos", path: "/alumnos" },
-        { name: "Padres de Familia", path: "/padres" },
-        { name: "Profesores", path: "/profesores" },
-        { name: "Exalumnos", path: "/exalumnos" },
+        { name: "Nuestra Comunidad", path: "/comunidad" },
       ]
     },
   ];

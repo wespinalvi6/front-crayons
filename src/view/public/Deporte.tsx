@@ -1,5 +1,5 @@
-import { Trophy, Users, Heart, Star, Target, Zap, ChevronRight, Activity } from "lucide-react";
-import React, { useState, useEffect } from 'react';
+import { Target, Zap, Activity } from "lucide-react";
+import { useState, useEffect } from 'react';
 
 const Deporte = () => {
     const [isLoaded, setIsLoaded] = useState(false);

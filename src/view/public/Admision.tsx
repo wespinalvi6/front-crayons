@@ -1,5 +1,5 @@
-import { ClipboardList, UserPlus, FileCheck, CreditCard, ArrowRight, CheckCircle2, ChevronRight, Download } from "lucide-react";
-import React, { useState, useEffect } from 'react';
+import { ClipboardList, UserPlus, FileCheck, CreditCard, CheckCircle2, Download } from "lucide-react";
+import { useState, useEffect } from 'react';
 
 const Admision = () => {
     const [isLoaded, setIsLoaded] = useState(false);

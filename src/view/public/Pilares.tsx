@@ -1,5 +1,5 @@
 import { Trophy, Laptop, Star, Globe, ArrowRight, CheckCircle2 } from "lucide-react";
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 const Pilares = () => {
     const [isLoaded, setIsLoaded] = useState(false);

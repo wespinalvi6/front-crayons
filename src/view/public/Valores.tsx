@@ -1,5 +1,5 @@
 import { Heart, Shield, Star, Users, Handshake, Bookmark } from "lucide-react";
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 const Valores = () => {
     const [isLoaded, setIsLoaded] = useState(false);

@@ -136,7 +136,7 @@ export default function CuotasProgramar() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async () => {
     if (confirm("¿Estás seguro de eliminar este periodo?")) {
       // API Call to delete would go here when endpoint is available
       // await axios.delete(`http://localhost:3000/api/cuotas/${id}`);
@@ -238,7 +238,7 @@ export default function CuotasProgramar() {
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50" onClick={() => openEditDialog(fee)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleDelete(fee.id)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleDelete()}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>

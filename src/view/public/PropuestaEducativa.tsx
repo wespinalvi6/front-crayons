@@ -1,5 +1,5 @@
-import { BookOpen, Calendar, Clock, ArrowUpRight, Search, ChevronRight, Bookmark } from "lucide-react";
-import React, { useState, useEffect } from 'react';
+import { BookOpen, Calendar, Clock, ArrowUpRight, Search, Bookmark } from "lucide-react";
+import { useState, useEffect } from 'react';
 
 const PropuestaEducativa = () => {
     const [isLoaded, setIsLoaded] = useState(false);
@@ -191,5 +191,5 @@ const PropuestaEducativa = () => {
     );
 };
 
-import { Link } from "react-router-dom";
+
 export default PropuestaEducativa;

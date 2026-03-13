@@ -1,5 +1,5 @@
 import { History, Target, Compass, ArrowUpRight, GraduationCap } from "lucide-react";
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 const VisionMision = () => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -158,5 +158,5 @@ const VisionMision = () => {
   );
 };
 
-import { Link } from "react-router-dom";
+
 export default VisionMision;

@@ -1,5 +1,5 @@
-import { Plane, Map, Globe, Compass, GraduationCap, ArrowUpRight, ChevronRight, Bookmark } from "lucide-react";
-import React, { useState, useEffect } from 'react';
+import { Plane, Map, Globe, Compass, ArrowUpRight } from "lucide-react";
+import { useState, useEffect } from 'react';
 
 const ViajesEstudio = () => {
     const [isLoaded, setIsLoaded] = useState(false);

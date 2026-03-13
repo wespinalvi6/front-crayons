@@ -1,6 +1,6 @@
 import { MapPin, Phone, Clock, Facebook, Instagram, Youtube, Send, MessageSquare, ChevronRight } from "lucide-react";
 import { useState, useEffect } from 'react';
-import { Link } from "react-router-dom";
+
 
 const Contact = () => {
     const [isLoaded, setIsLoaded] = useState(false);

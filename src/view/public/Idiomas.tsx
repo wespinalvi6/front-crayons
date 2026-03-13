@@ -1,5 +1,5 @@
-import { Globe2, MessageSquare, Headphones, Award, Languages, ChevronRight, Check } from "lucide-react";
-import React, { useState, useEffect } from 'react';
+import { Globe2, Headphones, Award, Languages, ChevronRight, Check } from "lucide-react";
+import { useState, useEffect } from 'react';
 
 const Idiomas = () => {
     const [isLoaded, setIsLoaded] = useState(false);

@@ -1,7 +1,7 @@
 import { useState, useEffect, Fragment } from 'react';
 import api from "@/lib/axios";
 import axios from 'axios';
-import { Search, User, Calendar, DollarSign, CheckCircle, XCircle, AlertCircle, CreditCard, ChevronDown, ChevronRight, FileDown, Printer, Banknote, Loader2 } from 'lucide-react';
+import { Search, User, Calendar, CreditCard, ChevronDown, ChevronRight, FileDown, Printer, Banknote, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -74,7 +74,7 @@ interface SearchApiResponse {
 }
 
 const CuotasDetalle = () => {
-  const { token } = useAuth();
+  const { } = useAuth();
   const [dni, setDni] = useState('');
   const [año, setAño] = useState(new Date().getFullYear().toString());
   const [datosEstudiante, setDatosEstudiante] = useState<DatosEstudiante | null>(null);

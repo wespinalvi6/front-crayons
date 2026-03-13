@@ -1,5 +1,5 @@
 import { Camera, Laptop, Music, Trophy, BookOpen, MapPin, ChevronRight, Maximize2 } from "lucide-react";
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 const Infraestructura = () => {
     const [isLoaded, setIsLoaded] = useState(false);
