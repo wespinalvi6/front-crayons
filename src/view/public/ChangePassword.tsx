@@ -49,7 +49,7 @@ export default function ChangePassword() {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/auth/change-password",
+        "https://back-crayons-production.up.railway.app/api/auth/change-password",
         form,
         {
           headers: {

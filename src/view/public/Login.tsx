@@ -24,7 +24,7 @@ export default function Login() {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/auth/login",
+        "https://back-crayons-production.up.railway.app/api/auth/login",
         form,
         {
           headers: { "Content-Type": "application/json" },

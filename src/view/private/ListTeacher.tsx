@@ -43,7 +43,7 @@ export default function ListTeacher() {
   const { data: anios = EMPTY_ARRAY, isLoading: isLoadingAnios } = useQuery<string[]>({
     queryKey: ['periodosA_anios'],
     queryFn: async () => {
-      const periodsRes = await axios.get('http://localhost:3000/api/cuotas/periodos');
+      const periodsRes = await axios.get('https://back-crayons-production.up.railway.app/api/cuotas/periodos');
       const data = periodsRes.data;
       if (data) {
         const list = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
@@ -68,7 +68,7 @@ export default function ListTeacher() {
     queryFn: async () => {
       if (!appliedAnio) return [];
       const { data } = await axios.get<ApiResponse>(
-        `http://localhost:3000/api/docente/lista-docentes/${appliedAnio}`
+        `https://back-crayons-production.up.railway.app/api/docente/lista-docentes/${appliedAnio}`
       );
       return data.success ? data.data : [];
     },
@@ -91,7 +91,7 @@ export default function ListTeacher() {
   const handleExportar = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/api/docente/exportar/${anioSeleccionado}`,
+        `https://back-crayons-production.up.railway.app/api/docente/exportar/${anioSeleccionado}`,
         {
           responseType: 'blob',
           params: {

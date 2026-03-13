@@ -70,7 +70,7 @@ export default function ListStudent() {
     queryKey: ['periodosA'],
     queryFn: async () => {
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:3000/api/cuotas/periodos", {
+      const response = await axios.get("https://back-crayons-production.up.railway.app/api/cuotas/periodos", {
         headers: { Authorization: `Bearer ${token}` }
       });
       return response.data.success ? response.data.data : [];
@@ -82,7 +82,7 @@ export default function ListStudent() {
     queryKey: ['grados'],
     queryFn: async () => {
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:3000/api/grado/lista-grado", {
+      const response = await axios.get("https://back-crayons-production.up.railway.app/api/grado/lista-grado", {
         headers: { Authorization: `Bearer ${token}` }
       });
       return response.data.status ? response.data.data : [];
@@ -96,7 +96,7 @@ export default function ListStudent() {
       if (!appliedFilters?.year || !appliedFilters?.grade) return null;
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `http://localhost:3000/api/alumno/lista-alumnos/${appliedFilters.year}/${appliedFilters.grade}`,
+        `https://back-crayons-production.up.railway.app/api/alumno/lista-alumnos/${appliedFilters.year}/${appliedFilters.grade}`,
         {
           headers: { Authorization: `Bearer ${token}` },
           params: { page, limit }
