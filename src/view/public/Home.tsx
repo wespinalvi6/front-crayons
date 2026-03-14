@@ -82,9 +82,9 @@ const HomePage = () => {
           </div>
           <div className="flex gap-6 items-center">
             <div className="flex gap-4 pr-6 border-r border-white/10">
-              <a href="#" className="hover:text-orange-500 transition-colors"><Facebook size={12} /></a>
-              <a href="#" className="hover:text-orange-500 transition-colors"><Instagram size={12} /></a>
-              <a href="#" className="hover:text-orange-500 transition-colors"><Youtube size={12} /></a>
+              <a href="#" aria-label="Facebook" className="hover:text-orange-500 transition-colors"><Facebook size={12} /></a>
+              <a href="#" aria-label="Instagram" className="hover:text-orange-500 transition-colors"><Instagram size={12} /></a>
+              <a href="#" aria-label="Youtube" className="hover:text-orange-500 transition-colors"><Youtube size={12} /></a>
             </div>
             <Link to="/login" className="flex items-center gap-2 hover:text-white transition-colors">
               <UserCheck size={12} className="text-orange-500" /> Intranet
@@ -157,7 +157,7 @@ const HomePage = () => {
               </Link>
               <Link
                 to="/admision"
-                className="px-5 py-2 rounded-full text-[11px] font-medium uppercase tracking-widest text-white bg-orange-600 hover:bg-orange-700 shadow-[0_10px_20px_-10px_rgba(234,88,12,0.5)] hover:shadow-[0_10px_20px_-5px_rgba(234,88,12,0.6)] transition-all transform hover:-translate-y-0.5"
+                className="px-5 py-2 rounded-full text-[11px] font-medium uppercase tracking-widest text-white bg-orange-700 hover:bg-orange-800 shadow-[0_10px_20px_-10px_rgba(194,65,12,0.5)] hover:shadow-[0_10px_20px_-5px_rgba(194,65,12,0.6)] transition-all transform hover:-translate-y-0.5"
               >
                 Admisión
               </Link>
@@ -237,7 +237,7 @@ const HomePage = () => {
             </Link>
             <Link
               to="/admision"
-              className="flex items-center justify-center w-full py-3 rounded-full text-xs font-semibold uppercase tracking-widest text-white bg-orange-600 hover:bg-orange-700 shadow-lg shadow-orange-600/20 transition-all"
+              className="flex items-center justify-center w-full py-3 rounded-full text-xs font-semibold uppercase tracking-widest text-white bg-orange-700 hover:bg-orange-800 shadow-lg shadow-orange-700/20 transition-all"
               onClick={toggleMenu}
             >
               Admisión 2026

@@ -32,7 +32,7 @@ const Idiomas = () => {
             <section className="relative h-[75vh] flex items-center overflow-hidden bg-indigo-950">
                 <div className="absolute inset-0 z-0">
                     <img
-                        src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=2000"
+                        src="https://res.cloudinary.com/droodoirh/image/upload/v1773505676/hero-optmizado_mjdhrk.jpg"
                         alt="Global communication"
                         className="w-full h-full object-cover opacity-30 mix-blend-overlay scale-110 animate-slow-zoom"
                     />

@@ -16,7 +16,7 @@ const Body = () => {
       name: "Inicial",
       age: "3 — 5 años",
       description: "Donde la curiosidad se transforma en conocimiento a través del juego dirigido y el afecto.",
-      image: "https://res.cloudinary.com/droodoirh/image/upload/v1772123383/Inicial_tdfx88.jpg",
+      image: "https://res.cloudinary.com/droodoirh/image/upload/f_auto,q_auto/v1772123383/Inicial_tdfx88.jpg",
       color: "#10b981",
       path: "/inicial"
     },
@@ -26,7 +26,7 @@ const Body = () => {
       name: "Primaria",
       age: "6 — 12 años",
       description: "Ambientes seguros y acogedores para fomentar el aprendizaje y la creatividad de nuestros alumnos.",
-      image: "https://res.cloudinary.com/droodoirh/image/upload/v1772123386/primaria_b4a9rl.jpg",
+      image: "https://res.cloudinary.com/droodoirh/image/upload/f_auto,q_auto/v1772123386/primaria_b4a9rl.jpg",
       color: "#3b82f6",
       path: "/excelencia"
     },
@@ -36,7 +36,7 @@ const Body = () => {
       name: "Secundaria",
       age: "12 — 17 años",
       description: "Desbloquea tu potencial, descubre tu futuro con nuestra preparación académica de alto rendimiento.",
-      image: "https://res.cloudinary.com/droodoirh/image/upload/v1772123389/secundaria_s8qetc.jpg",
+      image: "https://res.cloudinary.com/droodoirh/image/upload/f_auto,q_auto/v1772123389/secundaria_s8qetc.jpg",
       color: "#8b5cf6",
       path: "/excelencia"
     }
@@ -83,8 +83,11 @@ const Body = () => {
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0c] via-[#0a0a0c]/80 to-transparent z-10" />
           <img
-            src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=2000"
+            src="https://res.cloudinary.com/droodoirh/image/upload/f_auto,q_auto/v1773505676/hero-optmizado_mjdhrk.jpg"
             alt="Estudiantes colaborando"
+            fetchPriority="high"
+            width="1920"
+            height="1080"
             className="w-full h-full object-cover opacity-40 grayscale-[20%]"
           />
           {/* Grano de película sutil */}
@@ -152,11 +155,11 @@ const Body = () => {
         {/* Nuestros Pilares */}
         <section className="max-w-7xl mx-auto mb-32">
           <div className="text-center mb-20">
-            <span className="text-orange-600 font-bold tracking-[0.3em] text-[10px] uppercase mb-4 block">
+            <span className="text-orange-700 font-bold tracking-[0.3em] text-[10px] uppercase mb-4 block">
               ¿Por qué elegir Crayon's?
             </span>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-light tracking-tight text-[#0a0a0c]">
-              Nuestros <span className="font-serif italic text-orange-600/80">Pilares</span>
+              Nuestros <span className="font-serif italic text-orange-700/80">Pilares</span>
             </h2>
             <div className="w-12 h-[2px] bg-orange-200 mx-auto mt-6"></div>
           </div>
@@ -167,16 +170,16 @@ const Body = () => {
                 key={idx}
                 className="group relative p-10 bg-white border border-slate-100 rounded-tr-[40px] rounded-bl-[40px] hover:shadow-2xl hover:shadow-orange-500/5 transition-all duration-500 hover:-translate-y-2 overflow-hidden"
               >
-                <span className="absolute top-4 right-8 text-5xl font-black text-slate-50 select-none group-hover:text-orange-50 transition-colors">
+                <span aria-hidden="true" className="absolute top-4 right-8 text-5xl font-black text-slate-50 select-none group-hover:text-orange-50 transition-colors">
                   {pillar.id}
                 </span>
 
                 <div className="relative z-10">
-                  <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-600 mb-6 group-hover:scale-110 transition-transform duration-500">
+                  <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-700 mb-6 group-hover:scale-110 transition-transform duration-500">
                     {pillar.icon}
                   </div>
-                  <h4 className="text-xl font-bold mb-3 tracking-tight text-[#0a0a0c]">{pillar.title}</h4>
-                  <p className="text-slate-500 text-sm leading-relaxed font-light">
+                  <h3 className="text-xl font-bold mb-3 tracking-tight text-[#0a0a0c]">{pillar.title}</h3>
+                  <p className="text-slate-600 text-sm leading-relaxed font-light">
                     {pillar.desc}
                   </p>
                 </div>
@@ -193,8 +196,10 @@ const Body = () => {
             <div className="relative w-full lg:w-1/2">
               <div className="relative aspect-[4/5] md:aspect-square overflow-hidden rounded-2xl shadow-2xl">
                 <img
-                  src="https://res.cloudinary.com/droodoirh/image/upload/v1772123391/fot_grupal_fzlpng.jpg"
+                  src="https://res.cloudinary.com/droodoirh/image/upload/f_auto,q_auto/v1772123391/fot_grupal_fzlpng.jpg"
                   alt="Educación colaborativa"
+                  width="800"
+                  height="800"
                   className="w-full h-full object-cover grayscale-[20%] contrast-[1.1]"
                 />
                 <div className="absolute inset-0 bg-orange-900/10 mix-blend-multiply"></div>
@@ -222,16 +227,16 @@ const Body = () => {
             {/* Columna Texto Editorial */}
             <div className="w-full lg:w-1/2 space-y-8">
               <div className="space-y-4">
-                <span className="text-orange-600 font-bold tracking-[0.2em] text-[10px] uppercase block">
+                <span className="text-orange-700 font-bold tracking-[0.2em] text-[10px] uppercase block">
                   Propuesta Diferenciada
                 </span>
-                <h2 className="text-3xl md:text-4xl lg:text-6xl font-light leading-[1.1] text-[#0a0a0c]">
+                <h3 className="text-3xl md:text-4xl lg:text-6xl font-light leading-[1.1] text-[#0a0a0c]">
                   Educación que <br />
-                  <span className="font-serif italic text-orange-600/80">trasciende</span> las aulas.
-                </h2>
+                  <span className="font-serif italic text-orange-700/80">trasciende</span> las aulas.
+                </h3>
               </div>
 
-              <p className="text-slate-500 text-lg leading-relaxed font-light">
+              <p className="text-slate-600 text-lg leading-relaxed font-light">
                 Nuestra metodología integra el rigor académico con el desarrollo socio-emocional, garantizando que nuestros estudiantes no solo estén preparados para la universidad, sino para ser <span className="text-[#0a0a0c] font-medium">ciudadanos globales íntegros.</span>
               </p>
 
@@ -301,7 +306,7 @@ const Body = () => {
                 className={`group relative transition-all duration-700 ease-out ${idx === 1 ? 'md:-translate-y-8' : 'md:translate-y-8'}`}
               >
                 {/* Número de fondo (Brutalismo sutil) */}
-                <span className="absolute -top-12 -left-4 text-9xl font-black text-white/[0.02] select-none pointer-events-none transition-all duration-700 group-hover:text-white/[0.05]">
+                <span aria-hidden="true" className="absolute -top-12 -left-4 text-9xl font-black text-white/[0.02] select-none pointer-events-none transition-all duration-700 group-hover:text-white/[0.05]">
                   {level.number}
                 </span>
 
@@ -310,6 +315,9 @@ const Body = () => {
                   <img
                     src={level.image}
                     alt={level.name}
+                    width="736"
+                    height="920"
+                    loading="lazy"
                     className="w-full h-full object-cover filter grayscale-[0.3] contrast-[1.1] transition-transform duration-[1.5s] group-hover:scale-110 group-hover:grayscale-0"
                   />
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0a0a0c]/80"></div>
@@ -330,9 +338,9 @@ const Body = () => {
                     </span>
                   </div>
 
-                  <h4 className="text-3xl font-serif text-white group-hover:italic transition-all">
+                  <h3 className="text-3xl font-serif text-white group-hover:italic transition-all">
                     {level.name}
-                  </h4>
+                  </h3>
 
                   <p className="text-slate-400 text-sm leading-relaxed font-light">
                     {level.description}
@@ -431,7 +439,7 @@ const Body = () => {
                     {t.initial}
                   </div>
                   <div>
-                    <h5 className="text-[11px] font-bold tracking-[0.2em] text-white uppercase">{t.name}</h5>
+                    <h4 className="text-[11px] font-bold tracking-[0.2em] text-white uppercase">{t.name}</h4>
                     <p className="text-[9px] text-slate-500 font-bold tracking-widest mt-1 uppercase">{t.role}</p>
                   </div>
                 </div>
@@ -465,8 +473,11 @@ const Body = () => {
           {/* Card Principal - Biblioteca */}
           <div className="md:col-span-7 relative overflow-hidden rounded-[40px] group shadow-2xl border border-white/20">
             <img
-              src="https://res.cloudinary.com/droodoirh/image/upload/v1772123384/labortatios_de_cincia_hraicy.jpg"
+              src="https://res.cloudinary.com/droodoirh/image/upload/f_auto,q_auto/v1772123384/labortatios_de_cincia_hraicy.jpg"
               className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+              width="800"
+              height="600"
+              loading="lazy"
               alt="Biblioteca moderna"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent" />
@@ -480,8 +491,11 @@ const Body = () => {
           <div className="md:col-span-5 flex flex-col gap-8 text-white">
             <div className="h-1/2 relative overflow-hidden rounded-[40px] group shadow-xl">
               <img
-                src="https://res.cloudinary.com/droodoirh/image/upload/v1772123382/campo_deprotivp_acozvt.jpg"
+                src="https://res.cloudinary.com/droodoirh/image/upload/f_auto,q_auto/v1772123382/campo_deprotivp_acozvt.jpg"
                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                width="800"
+                height="400"
+                loading="lazy"
                 alt="Campus deportivo"
               />
               <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors" />
@@ -493,8 +507,11 @@ const Body = () => {
             <div className="h-1/2 grid grid-cols-2 gap-8 text-slate-900">
               <div className="relative overflow-hidden rounded-[40px] group shadow-lg">
                 <img
-                  src="https://res.cloudinary.com/droodoirh/image/upload/v1772123383/docentes_kyqyyu.jpg"
+                  src="https://res.cloudinary.com/droodoirh/image/upload/f_auto,q_auto/v1772123383/docentes_kyqyyu.jpg"
                   className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                  width="400"
+                  height="400"
+                  loading="lazy"
                   alt="Aulas equipadas"
                 />
                 <div className="absolute inset-0 bg-orange-600/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -520,8 +537,8 @@ const Body = () => {
             {/* Texto con Composición Artística */}
             <div className="relative z-10 text-left">
               <div className="flex items-center gap-4 mb-10">
-                <div className="h-[2px] w-16 bg-orange-600"></div>
-                <span className="text-orange-600 font-bold text-xs uppercase tracking-[0.4em]">Próximo Ciclo Escolar</span>
+                <div className="h-[2px] w-16 bg-orange-700"></div>
+                <span className="text-orange-700 font-bold text-xs uppercase tracking-[0.4em]">Próximo Ciclo Escolar</span>
               </div>
 
               <h2 className="text-4xl md:text-6xl lg:text-8xl font-serif text-slate-900 leading-[0.95] mb-8 lg:mb-12">
@@ -564,14 +581,17 @@ const Body = () => {
               {/* Marco de Imagen tipo Galería de Arte */}
               <div className="relative w-full h-full p-8 bg-white shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] rounded-2xl transform rotate-3 hover:rotate-0 transition-transform duration-700">
                 <img
-                  src="https://res.cloudinary.com/droodoirh/image/upload/v1772123396/graduada_mujer_zullaq.jpg"
+                  src="https://res.cloudinary.com/droodoirh/image/upload/f_auto,q_auto/v1772123396/graduada_mujer_zullaq.jpg"
                   className="w-full h-full object-cover rounded-lg"
+                  width="600"
+                  height="800"
+                  loading="lazy"
                   alt="Estudiante"
                 />
                 {/* Etiqueta flotante */}
-                <div className="absolute -bottom-10 -left-10 bg-white p-8 rounded-2xl shadow-2xl border border-slate-50 max-w-[240px] text-left">
-                  <p className="text-orange-600 font-serif italic text-2xl mb-2">"La mejor elección"</p>
-                  <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest leading-none">Familia Rodríguez - 2024</p>
+                <div aria-hidden="true" className="absolute -bottom-10 -left-10 bg-white p-8 rounded-2xl shadow-2xl border border-slate-50 max-w-[240px] text-left">
+                  <p className="text-orange-700 font-serif italic text-2xl mb-2">"La mejor elección"</p>
+                  <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest leading-none">Familia Rodríguez - 2024</p>
                 </div>
               </div>
             </div>
@@ -591,8 +611,11 @@ const Body = () => {
             <div className="lg:col-span-4 space-y-8">
               <div className="space-y-6">
                 <img
-                  src="https://res.cloudinary.com/dszdc6rh8/image/upload/v1747351782/image_1_vhjpzr.png"
+                  src="https://res.cloudinary.com/dszdc6rh8/image/upload/f_auto,q_auto/v1747351782/image_1_vhjpzr.png"
                   alt="Logo Crayon's"
+                  width="351"
+                  height="92"
+                  loading="lazy"
                   className="h-24 w-auto brightness-110 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]"
                 />
                 <p className="text-slate-400 text-sm leading-relaxed">
@@ -602,11 +625,11 @@ const Body = () => {
 
               <div className="flex gap-4">
                 {[
-                  { Icon: Facebook, color: 'hover:bg-blue-600' },
-                  { Icon: Instagram, color: 'hover:bg-pink-600' },
-                  { Icon: Youtube, color: 'hover:bg-red-600' }
-                ].map(({ Icon, color }, i) => (
-                  <a key={i} href="#" className={`w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white transition-all duration-300 ${color}`}>
+                  { Icon: Facebook, color: 'hover:bg-blue-600', name: 'Facebook' },
+                  { Icon: Instagram, color: 'hover:bg-pink-600', name: 'Instagram' },
+                  { Icon: Youtube, color: 'hover:bg-red-600', name: 'Youtube' }
+                ].map(({ Icon, color, name }, i) => (
+                  <a key={i} href="#" aria-label={name} className={`w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white transition-all duration-300 ${color}`}>
                     <Icon size={20} />
                   </a>
                 ))}
@@ -615,7 +638,7 @@ const Body = () => {
 
             {/* Columna Navegación */}
             <div className="lg:col-span-2">
-              <h4 className="text-sm font-black uppercase tracking-[0.2em] text-orange-500 mb-8">Colegio</h4>
+              <h3 className="text-sm font-black uppercase tracking-[0.2em] text-orange-500 mb-8">Colegio</h3>
               <ul className="space-y-4">
                 {['Nosotros', 'Propuesta', 'Admisión', 'Comunidad', 'Convenios'].map((item) => (
                   <li key={item}>
@@ -630,7 +653,7 @@ const Body = () => {
 
             {/* Columna Contacto */}
             <div className="lg:col-span-3">
-              <h4 className="text-sm font-black uppercase tracking-[0.2em] text-orange-500 mb-8">Ubícanos</h4>
+              <h3 className="text-sm font-black uppercase tracking-[0.2em] text-orange-500 mb-8">Ubícanos</h3>
               <div className="space-y-6">
                 <div className="flex gap-4">
                   <div className="mt-1 w-8 h-8 rounded-lg bg-orange-600/10 flex items-center justify-center text-orange-500 shrink-0">
@@ -657,7 +680,7 @@ const Body = () => {
 
             {/* Columna Certificaciones/Confianza */}
             <div className="lg:col-span-3">
-              <h4 className="text-sm font-black uppercase tracking-[0.2em] text-orange-500 mb-8">Atención</h4>
+              <h3 className="text-sm font-black uppercase tracking-[0.2em] text-orange-500 mb-8">Atención</h3>
               <div className="p-6 rounded-3xl bg-white/5 border border-white/5 space-y-4">
                 <div className="flex items-center gap-3">
                   <ShieldCheck className="text-green-500" size={20} />
