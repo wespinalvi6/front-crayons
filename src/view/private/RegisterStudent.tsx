@@ -213,7 +213,7 @@ export default function RegisterStudent() {
       const formDataPdf = new FormData();
       formDataPdf.append('file', file);
 
-      const response = await fetch('https://back-crayons-production.up.railway.app/api/ocr/extraer-n8n', {
+      const response = await fetch('https://api.colegiocrayons.com/api/ocr/extraer-n8n', {
         method: 'POST',
         body: formDataPdf,
       });
@@ -428,7 +428,7 @@ export default function RegisterStudent() {
     queryFn: async () => {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
-      const response = await axios.get("https://back-crayons-production.up.railway.app/api/grado/lista-grado", { headers });
+      const response = await axios.get("https://api.colegiocrayons.com/api/grado/lista-grado", { headers });
       return response.data.data;
     },
     staleTime: 60 * 60 * 1000, // 1 hora
@@ -439,7 +439,7 @@ export default function RegisterStudent() {
     queryFn: async () => {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
-      const response = await axios.get("https://back-crayons-production.up.railway.app/api/cuotas/periodos", { headers });
+      const response = await axios.get("https://api.colegiocrayons.com/api/cuotas/periodos", { headers });
       return response.data.data;
     },
     staleTime: 60 * 60 * 1000, // 1 hora
@@ -603,7 +603,7 @@ export default function RegisterStudent() {
       setSearchingFor('alumno');
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `https://back-crayons-production.up.railway.app/api/dni/buscar-dni/${formData.alumno_dni}`,
+        `https://api.colegiocrayons.com/api/dni/buscar-dni/${formData.alumno_dni}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -647,7 +647,7 @@ export default function RegisterStudent() {
       setSearchingFor(tipo);
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `https://back-crayons-production.up.railway.app/api/dni/buscar-dni/${dni}`,
+        `https://api.colegiocrayons.com/api/dni/buscar-dni/${dni}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -785,7 +785,7 @@ export default function RegisterStudent() {
 
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        "https://back-crayons-production.up.railway.app/api/matricula/matricula",
+        "https://api.colegiocrayons.com/api/matricula/matricula",
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );

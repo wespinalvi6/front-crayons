@@ -129,7 +129,7 @@ export default function RegisterTeacher() {
   const { data: periodos = EMPTY_ARRAY } = useQuery<any[]>({
     queryKey: ['periodosPromocion'],
     queryFn: async () => {
-      const response = await axios.get("https://back-crayons-production.up.railway.app/api/promocion/periodos");
+      const response = await axios.get("https://api.colegiocrayons.com/api/promocion/periodos");
       if (response.data.status) {
         return response.data.data;
       }
@@ -154,7 +154,7 @@ export default function RegisterTeacher() {
     queryKey: ['disponibilidadCursos', currentYear],
     queryFn: async () => {
       if (!currentYear) return [];
-      const response = await axios.get(`https://back-crayons-production.up.railway.app/api/docente/disponibilidad-cursos/${currentYear}`);
+      const response = await axios.get(`https://api.colegiocrayons.com/api/docente/disponibilidad-cursos/${currentYear}`);
       if (response.data.success) {
         return response.data.data;
       }
@@ -182,7 +182,7 @@ export default function RegisterTeacher() {
     setCredenciales(null);
     try {
       // 1. Intentar búsqueda local
-      const localRes = await axios.get(`https://back-crayons-production.up.railway.app/api/docente/buscar-local/${formData.dni}`);
+      const localRes = await axios.get(`https://api.colegiocrayons.com/api/docente/buscar-local/${formData.dni}`);
 
       if (localRes.data.success) {
         const d = localRes.data.data;
@@ -205,7 +205,7 @@ export default function RegisterTeacher() {
 
       // 2. Si no es local, buscar en RENIEC/DNI externo
       const response = await axios.get<DniResponse>(
-        `https://back-crayons-production.up.railway.app/api/dni/buscar-dni/${formData.dni}`
+        `https://api.colegiocrayons.com/api/dni/buscar-dni/${formData.dni}`
       );
 
       if (response.data.status) {
@@ -268,7 +268,7 @@ export default function RegisterTeacher() {
       };
 
       const { data } = await axios.post<ApiResponse>(
-        "https://back-crayons-production.up.railway.app/api/docente/registrar-docente",
+        "https://api.colegiocrayons.com/api/docente/registrar-docente",
         payload
       );
 

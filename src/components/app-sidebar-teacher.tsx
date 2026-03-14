@@ -39,7 +39,7 @@ export function AppSidebarTeacher({
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('https://back-crayons-production.up.railway.app/api/auth/logout', {
+      const response = await fetch('https://api.colegiocrayons.com/api/auth/logout', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

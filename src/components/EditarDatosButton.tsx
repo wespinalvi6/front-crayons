@@ -52,8 +52,8 @@ interface EditarDatosButtonProps {
   };
 }
 
-export default function EditarDatosButton({ 
-  onDataUpdated, 
+export default function EditarDatosButton({
+  onDataUpdated,
   className = "",
   variant = "default",
   size = "default",
@@ -88,7 +88,7 @@ export default function EditarDatosButton({
     setIsLoading(true);
     try {
       let response;
-      
+
       // Si tenemos datos del alumno específico, los usamos directamente
       if (alumnoData) {
         setFormData({
@@ -101,7 +101,7 @@ export default function EditarDatosButton({
         setMessage({ text: "Datos cargados correctamente", isError: false });
       } else {
         // Si no, hacemos la llamada a la API para obtener datos del alumno logueado
-        response = await axios.get("https://back-crayons-production.up.railway.app/api/alumno/mis-datos", {
+        response = await axios.get("https://api.colegiocrayons.com/api/alumno/mis-datos", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -122,9 +122,9 @@ export default function EditarDatosButton({
         }
       }
     } catch (error) {
-      setMessage({ 
-        text: "Error al cargar los datos del alumno", 
-        isError: true 
+      setMessage({
+        text: "Error al cargar los datos del alumno",
+        isError: true
       });
     } finally {
       setIsLoading(false);
@@ -157,10 +157,10 @@ export default function EditarDatosButton({
       };
 
       // Usar el endpoint correcto con el ID del alumno
-      const endpoint = alumnoId 
-        ? `https://back-crayons-production.up.railway.app/api/alumno/estudiante/${alumnoId}`
-        : "https://back-crayons-production.up.railway.app/api/alumno/mis-datos";
-        
+      const endpoint = alumnoId
+        ? `https://api.colegiocrayons.com/api/alumno/estudiante/${alumnoId}`
+        : "https://api.colegiocrayons.com/api/alumno/mis-datos";
+
       const response = await axios.put(endpoint, dataToSend, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -168,26 +168,26 @@ export default function EditarDatosButton({
         },
       });
 
-             if (response.data.success) {
-         setDatosAlumno(response.data.data);
-         setMessage({ text: "Datos actualizados correctamente", isError: false });
-         
-         // Llamar al callback inmediatamente para actualizar la lista
-         if (onDataUpdated) {
-           onDataUpdated(response.data.data);
-         }
-         
-         // Cerrar modal después de un breve delay para que se vea el mensaje de éxito
-         setTimeout(() => {
-           setIsModalOpen(false);
-         }, 1000);
-       } else {
-         setMessage({ text: "Error al actualizar los datos", isError: true });
-       }
+      if (response.data.success) {
+        setDatosAlumno(response.data.data);
+        setMessage({ text: "Datos actualizados correctamente", isError: false });
+
+        // Llamar al callback inmediatamente para actualizar la lista
+        if (onDataUpdated) {
+          onDataUpdated(response.data.data);
+        }
+
+        // Cerrar modal después de un breve delay para que se vea el mensaje de éxito
+        setTimeout(() => {
+          setIsModalOpen(false);
+        }, 1000);
+      } else {
+        setMessage({ text: "Error al actualizar los datos", isError: true });
+      }
     } catch (error) {
-      setMessage({ 
-        text: "Error al actualizar los datos del alumno", 
-        isError: true 
+      setMessage({
+        text: "Error al actualizar los datos del alumno",
+        isError: true
       });
     } finally {
       setIsSaving(false);
@@ -202,7 +202,7 @@ export default function EditarDatosButton({
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
       <DialogTrigger asChild>
-        <Button 
+        <Button
           onClick={handleOpenModal}
           variant={variant}
           size={size}
@@ -223,7 +223,7 @@ export default function EditarDatosButton({
             Modifica tu información personal. Los cambios se guardarán automáticamente.
           </DialogDescription>
         </DialogHeader>
-        
+
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
             <div className="text-center">
@@ -239,13 +239,13 @@ export default function EditarDatosButton({
                   <Label htmlFor="dni" className="text-[#3E328C] font-semibold">
                     DNI
                   </Label>
-                                     <Input
-                     id="dni"
-                     name="dni"
-                     value={formData.dni}
-                     disabled={true}
-                     className="border-[#3E328C] bg-gray-100 text-gray-600 cursor-not-allowed"
-                   />
+                  <Input
+                    id="dni"
+                    name="dni"
+                    value={formData.dni}
+                    disabled={true}
+                    className="border-[#3E328C] bg-gray-100 text-gray-600 cursor-not-allowed"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="fecha_nacimiento" className="text-[#3E328C] font-semibold">
@@ -261,7 +261,7 @@ export default function EditarDatosButton({
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="nombre" className="text-[#3E328C] font-semibold">
                   Nombres
@@ -275,7 +275,7 @@ export default function EditarDatosButton({
                   className="border-[#3E328C] focus:border-[#F26513]"
                 />
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="ap_p" className="text-[#3E328C] font-semibold">
@@ -307,40 +307,39 @@ export default function EditarDatosButton({
             </div>
 
             {message && (
-              <div className={`p-3 rounded-md mb-4 ${
-                message.isError 
-                  ? 'bg-red-100 text-red-700 border border-red-300' 
+              <div className={`p-3 rounded-md mb-4 ${message.isError
+                  ? 'bg-red-100 text-red-700 border border-red-300'
                   : 'bg-green-100 text-green-700 border border-green-300'
-              }`}>
+                }`}>
                 {message.text}
               </div>
             )}
 
-                         <DialogFooter>
-               <Button 
-                 variant="outline" 
-                 onClick={() => setIsModalOpen(false)}
-                 className="border-[#3E328C] text-[#3E328C] hover:bg-[#3E328C] hover:text-white"
-               >
-                 Cancelar
-               </Button>
-               <Button 
-                 onClick={handleSave}
-                 disabled={isSaving}
-                 className="bg-[#F26513] hover:bg-orange-600 text-white"
-               >
-                 {isSaving ? "Guardando..." : "Guardar Cambios"}
-               </Button>
-               {message && !message.isError && (
-                 <Button 
-                   variant="outline" 
-                   onClick={() => setIsModalOpen(false)}
-                   className="border-green-500 text-green-600 hover:bg-green-50"
-                 >
-                   Cerrar
-                 </Button>
-               )}
-             </DialogFooter>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsModalOpen(false)}
+                className="border-[#3E328C] text-[#3E328C] hover:bg-[#3E328C] hover:text-white"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="bg-[#F26513] hover:bg-orange-600 text-white"
+              >
+                {isSaving ? "Guardando..." : "Guardar Cambios"}
+              </Button>
+              {message && !message.isError && (
+                <Button
+                  variant="outline"
+                  onClick={() => setIsModalOpen(false)}
+                  className="border-green-500 text-green-600 hover:bg-green-50"
+                >
+                  Cerrar
+                </Button>
+              )}
+            </DialogFooter>
           </>
         )}
       </DialogContent>

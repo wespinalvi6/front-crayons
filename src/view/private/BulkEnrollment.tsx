@@ -107,7 +107,7 @@ export default function BulkEnrollment() {
     const { data: gradosDisponibles = [] } = useQuery<GradoData[]>({
         queryKey: ['grados'],
         queryFn: async () => {
-            const response = await fetch('https://back-crayons-production.up.railway.app/api/grado/lista-grado');
+            const response = await fetch('https://api.colegiocrayons.com/api/grado/lista-grado');
             const data = await response.json();
             if (data.status && data.data) {
                 return data.data;
@@ -127,7 +127,7 @@ export default function BulkEnrollment() {
     // Función para obtener los costos del año
     const obtenerCostosAnio = async (anio: string, index: number) => {
         try {
-            const response = await fetch(`https://back-crayons-production.up.railway.app/api/cuotas/anio/${anio}`);
+            const response = await fetch(`https://api.colegiocrayons.com/api/cuotas/anio/${anio}`);
             const data = await response.json();
             if (data.success) {
                 setStudentsData(prev => {
@@ -215,7 +215,7 @@ export default function BulkEnrollment() {
             formData.append('pdf', file);
 
             // Llamar a la API para este archivo
-            const response = await fetch('https://back-crayons-production.up.railway.app/api/ocr/extraer-ficha', {
+            const response = await fetch('https://api.colegiocrayons.com/api/ocr/extraer-ficha', {
                 method: 'POST',
                 body: formData,
             });
@@ -284,7 +284,7 @@ export default function BulkEnrollment() {
             formData.append('pdf', fileToReprocess);
 
             // Llamar a la API
-            const response = await fetch('https://back-crayons-production.up.railway.app/api/ocr/extraer-ficha', {
+            const response = await fetch('https://api.colegiocrayons.com/api/ocr/extraer-ficha', {
                 method: 'POST',
                 body: formData,
             });
@@ -364,7 +364,7 @@ export default function BulkEnrollment() {
         setSuccessMessage(null);
 
         try {
-            const response = await fetch('https://back-crayons-production.up.railway.app/api/matricula/matricula/insertar-extraidos', {
+            const response = await fetch('https://api.colegiocrayons.com/api/matricula/matricula/insertar-extraidos', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

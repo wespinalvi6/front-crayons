@@ -79,7 +79,7 @@ export default function CuotasProgramar() {
   const { data: fees = EMPTY_ARRAY } = useQuery<FeeSchedule[]>({
     queryKey: ['periodosCuotas'],
     queryFn: async () => {
-      const response = await axios.get('https://back-crayons-production.up.railway.app/api/cuotas/periodos');
+      const response = await axios.get('https://api.colegiocrayons.com/api/cuotas/periodos');
       if (response.data.success) {
         return response.data.data.sort((a: FeeSchedule, b: FeeSchedule) => b.anio - a.anio);
       }
@@ -139,7 +139,7 @@ export default function CuotasProgramar() {
   const handleDelete = async () => {
     if (confirm("¿Estás seguro de eliminar este periodo?")) {
       // API Call to delete would go here when endpoint is available
-      // await axios.delete(`https://back-crayons-production.up.railway.app/api/cuotas/${id}`);
+      // await axios.delete(`https://api.colegiocrayons.com/api/cuotas/${id}`);
       // For now, optimistic update for UX if we had the endpoint
       // setFees(prev => prev.filter(f => f.id !== id));
       alert("Funcionalidad de eliminar pendiente de endpoint");
@@ -158,11 +158,11 @@ export default function CuotasProgramar() {
 
       if (editingId) {
         // Edit logic would go here when endpoint is available
-        // await axios.put(`https://back-crayons-production.up.railway.app/api/cuotas/${editingId}`, payload);
+        // await axios.put(`https://api.colegiocrayons.com/api/cuotas/${editingId}`, payload);
         alert("Funcionalidad de editar pendiente de endpoint");
       } else {
         // Create Logic
-        const response = await axios.post('https://back-crayons-production.up.railway.app/api/cuotas/agregar-periodo', payload);
+        const response = await axios.post('https://api.colegiocrayons.com/api/cuotas/agregar-periodo', payload);
         if (response.status === 200 || response.status === 201) {
           alert("Creado correctamente");
           // Invalidar caché para refetch de la tabla

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://back-crayons-production.up.railway.app/api",
+  baseURL: "https://api.colegiocrayons.com/api",
 });
 
 api.interceptors.request.use((config) => {
