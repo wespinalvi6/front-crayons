@@ -194,8 +194,11 @@ const HomePage = () => {
         >
           <div className="flex justify-between items-center p-6 border-b border-slate-100">
             <img
-              src="https://res.cloudinary.com/dszdc6rh8/image/upload/v1747351782/image_1_vhjpzr.png"
+              src="https://res.cloudinary.com/dszdc6rh8/image/upload/f_auto,q_auto/v1747351782/image_1_vhjpzr.png"
               alt="Logo"
+              width="122"
+              height="32"
+              loading="lazy"
               className="h-8 object-contain"
             />
             <button onClick={toggleMenu} className="p-2 -mr-2 text-slate-400 hover:text-slate-900">

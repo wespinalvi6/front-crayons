@@ -346,7 +346,7 @@ const Body = () => {
                     {level.description}
                   </p>
 
-                  <Link to={level.path} className="pt-4 flex items-center gap-3 text-[10px] font-black tracking-[0.2em] uppercase group/btn">
+                  <Link aria-label={`Ver detalles sobre ${level.name}`} to={level.path} className="pt-4 flex items-center gap-3 text-[10px] font-black tracking-[0.2em] uppercase group/btn">
                     <span className="group-hover/btn:mr-2 transition-all">Ver detalle</span>
                     <div className="w-8 h-8 border border-slate-800 rounded-full flex items-center justify-center group-hover/btn:bg-white group-hover/btn:text-black transition-all">
                       <ArrowRight className="w-3 h-3" />
@@ -439,7 +439,7 @@ const Body = () => {
                     {t.initial}
                   </div>
                   <div>
-                    <h4 className="text-[11px] font-bold tracking-[0.2em] text-white uppercase">{t.name}</h4>
+                    <h3 className="text-[11px] font-bold tracking-[0.2em] text-white uppercase">{t.name}</h3>
                     <p className="text-[9px] text-slate-500 font-bold tracking-widest mt-1 uppercase">{t.role}</p>
                   </div>
                 </div>
