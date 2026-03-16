@@ -45,6 +45,7 @@ interface PagoDetalle {
   metodo_pago: string | null;
   numero_recibo: string | null;
   observaciones: string | null;
+  comprobante_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -192,8 +193,37 @@ const CuotasDetalle = () => {
     doc.save(`Recibo_${payment.receiptNumber}.pdf`);
   };
 
-  const handleDownloadReceipt = async (id: number) => {
+  const handleDownloadReceipt = async (item: any) => {
+    // Extraer datos soportando ambos formatos (PagoDetalle y DailyPayment)
+    const id = item.id;
+    const metodo_pago = item.metodo_pago || item.method || '';
+    const numero_recibo = item.numero_recibo || item.receiptNumber || '';
+    const comprobante_url = item.comprobante_url;
+
+    // Si el item ya tiene la URL del comprobante guardada (ej. Mercado Pago)
+    if (comprobante_url) {
+      window.open(comprobante_url, '_blank');
+      return;
+    }
+
+    // Como respaldo, si es un pago con tarjeta/yape pero no se guardó la URL explícitamente
+    if (['TARJETA', 'YAPE'].includes(metodo_pago.toUpperCase()) && numero_recibo && numero_recibo.length > 5) {
+      const receiptUrl = `https://www.mercadopago.com.pe/tools/receipt-view/${numero_recibo}`;
+      window.open(receiptUrl, '_blank');
+      return;
+    }
+
     try {
+      // Primero intentamos una petición normal (sin blob) para ver si nos devuelve una URL externa
+      // El backend ahora detecta esto y responde JSON si hay comprobante_url
+      const checkResponse = await api.get(`/pago/constancia/${id}`);
+
+      if (checkResponse.data.external && checkResponse.data.url) {
+        window.open(checkResponse.data.url, '_blank');
+        return;
+      }
+
+      // Si no es externo, procedemos a descargar el PDF generado internamente
       const response = await api.get(`/pago/constancia/${id}`, {
         responseType: 'blob'
       });
@@ -202,13 +232,14 @@ const CuotasDetalle = () => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `recibo-REC-${new Date().getFullYear()}-${id}.pdf`);
+      link.setAttribute('download', `recibo-${numero_recibo || id}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      alert('Error al generar la constancia de pago');
+      console.error(error);
+      alert('Error al obtener el comprobante de pago');
     }
   };
 
@@ -513,7 +544,7 @@ const CuotasDetalle = () => {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleDownloadReceipt(matriculaInfo.id)}
+                              onClick={() => handleDownloadReceipt(matriculaInfo)}
                               className="text-xs h-8 bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 hover:border-blue-300"
                             >
                               <FileDown className="h-3.5 w-3.5 mr-1" />
@@ -580,7 +611,7 @@ const CuotasDetalle = () => {
                                     variant="outline"
                                     size="sm"
                                     className="h-8 bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 hover:border-blue-300"
-                                    onClick={() => handleDownloadReceipt(cuota.id)}
+                                    onClick={() => handleDownloadReceipt(cuota)}
                                   >
                                     <FileDown className="h-4 w-4 mr-1" />
                                     Constancia PDF
@@ -750,7 +781,7 @@ const CuotasDetalle = () => {
                                                 variant="outline"
                                                 size="sm"
                                                 className="h-7 bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 px-2 text-[10px]"
-                                                onClick={() => handleDownloadReceipt(det.id)}
+                                                onClick={() => handleDownloadReceipt(det)}
                                               >
                                                 <FileDown className="h-3 w-3 mr-1" />
                                                 Constancia
@@ -816,7 +847,7 @@ const CuotasDetalle = () => {
                           variant="outline"
                           size="sm"
                           className="h-8 bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
-                          onClick={() => handleDownloadReceipt(p.id)}
+                          onClick={() => handleDownloadReceipt(p)}
                         >
                           <FileDown className="h-4 w-4 mr-1" />
                           Constancia PDF
