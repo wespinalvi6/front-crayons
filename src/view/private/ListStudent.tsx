@@ -19,11 +19,13 @@ import {
 import axios from "axios";
 import EditarDatosButton from "@/components/EditarDatosButton";
 import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, UserX, UserPlus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface Periodo {
   id: number;
   anio: number;
+  activo: number;
 }
 
 type Apoderado = {
@@ -44,6 +46,9 @@ type Student = {
   fecha_nacimiento: string;
   grado: string;
   fecha_matricula: string;
+  estado: string;
+  activo: number;
+  periodo_activo?: number;
   apoderados: Apoderado[];
 };
 
@@ -116,6 +121,8 @@ export default function ListStudent() {
   const currentPagination = studentsResponse?.pagination || { page: 1, limit: 10, total: 0, totalPages: 0 };
   const loading = isLoadingStudents || isFetching;
 
+  const currentPeriodoActivo = yearsAvailable.find(p => p.anio.toString() === appliedFilters?.year)?.activo;
+
   // Función para actualizar un estudiante específico en la lista
   const updateStudentInList = (updatedStudent: any) => {
     // Actualizar la caché localmente
@@ -145,6 +152,41 @@ export default function ListStudent() {
     setTimeout(() => {
       setUpdateMessage(null);
     }, 2000);
+  };
+
+  const handleToggleEstado = async (alumno_id: number, currentEstado: string) => {
+    if (currentPeriodoActivo === 0) {
+      alert("No se pueden realizar cambios en un periodo inactivo.");
+      return;
+    }
+    try {
+      const token = localStorage.getItem("token");
+      const isRetiring = currentEstado === 'Activo';
+      const nuevoEstado = isRetiring ? 'Retirado' : 'Activo';
+      const nuevoActivo = isRetiring ? 0 : 1;
+
+      const confirmMsg = isRetiring
+        ? "¿Estás seguro de que deseas RETIRAR a este alumno? Se le quitará el acceso al sistema."
+        : "¿Estás seguro de que deseas RE-INCORPORAR a este alumno? Se le habilitará el acceso de nuevo.";
+
+      if (!window.confirm(confirmMsg)) return;
+
+      const { data } = await axios.patch(
+        `https://api.colegiocrayons.com/api/alumno/toggle-estado/${alumno_id}`,
+        { estado: nuevoEstado, activo: nuevoActivo },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (data.success) {
+        setUpdateMessage({ text: data.message, isSuccess: true });
+        queryClient.invalidateQueries({ queryKey: ['studentsList'] });
+        setTimeout(() => setUpdateMessage(null), 3000);
+      } else {
+        alert(data.message || "Error al cambiar el estado");
+      }
+    } catch (error: any) {
+      alert(error.response?.data?.error || "Error al conectar con el servidor");
+    }
   };
 
   // Filtrar estudiantes por DNI (Localmente sobre los datos de la página actual)
@@ -178,6 +220,14 @@ export default function ListStudent() {
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
+      {/* Banner de Periodo Inactivo */}
+      {appliedFilters?.year && currentPeriodoActivo === 0 && (
+        <div className="bg-orange-50 border border-orange-200 text-orange-800 p-4 rounded-lg flex items-center gap-3 text-sm font-medium">
+          <span className="text-xl">⚠️</span>
+          Este periodo académico está <strong className="font-bold">Inactivo</strong>. Las acciones de retiro, habilitación y edición de datos están deshabilitadas.
+        </div>
+      )}
+
       {/* Filtros */}
       <div className="flex flex-wrap items-end gap-4">
         <div>
@@ -187,11 +237,15 @@ export default function ListStudent() {
               <SelectValue placeholder="Año" />
             </SelectTrigger>
             <SelectContent>
-              {yearsAvailable.map((p) => (
-                <SelectItem key={p.id} value={p.anio.toString()}>
-                  {p.anio}
-                </SelectItem>
-              ))}
+              {yearsAvailable
+                .sort((a, b) => b.anio - a.anio)
+                .map((p) => (
+                  <SelectItem key={p.id} value={p.anio.toString()}>
+                    <span className={p.activo === 0 ? "text-slate-400" : ""}>
+                      {p.anio} {p.activo === 0 ? "(Inactivo)" : ""}
+                    </span>
+                  </SelectItem>
+                ))}
               {yearsAvailable.length === 0 && (
                 <SelectItem value="2026">2026</SelectItem>
               )}
@@ -234,7 +288,7 @@ export default function ListStudent() {
         </div>
         <Button
           onClick={handleSearch}
-          className="mt-2 h-9 bg-slate-900 text-white hover:bg-slate-800"
+          className="mt-2 h-9 bg-blue-700 text-white hover:bg-blue-800"
           disabled={loading}
         >
           {loading ? (
@@ -257,12 +311,12 @@ export default function ListStudent() {
       )}
 
       {/* Información de resultados */}
-      <div className="flex justify-between items-center text-sm text-gray-600">
+      <div className="flex justify-between items-center text-sm text-slate-700 font-medium">
         <div>
           Mostrando {students.length} de {currentPagination.total} estudiantes
           {dniSearch.trim() !== "" && ` (filtrados por DNI: ${dniSearch})`}
         </div>
-        <div className="flex items-center gap-2 font-medium">
+        <div className="flex items-center gap-2">
           Página {currentPagination.page} de {currentPagination.totalPages || 1}
         </div>
       </div>
@@ -275,6 +329,7 @@ export default function ListStudent() {
               <TableHead>DNI</TableHead>
               <TableHead>Nombre</TableHead>
               <TableHead>Grado</TableHead>
+              <TableHead>Estado</TableHead>
               <TableHead>Fecha Matrícula</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
@@ -282,7 +337,7 @@ export default function ListStudent() {
           <TableBody>
             {filteredStudents.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-4">
+                <TableCell colSpan={6} className="text-center py-4">
                   {dniSearch.trim() !== ""
                     ? `No se encontraron estudiantes con DNI: ${dniSearch}`
                     : "No hay estudiantes registrados"
@@ -291,7 +346,15 @@ export default function ListStudent() {
               </TableRow>
             ) : (
               filteredStudents.map((student) => (
-                <CardGroup key={student.alumno_id} student={student} showParent={showParent} setShowParent={setShowParent} updateStudentInList={updateStudentInList} />
+                <CardGroup
+                  key={student.alumno_id}
+                  student={student}
+                  showParent={showParent}
+                  setShowParent={setShowParent}
+                  updateStudentInList={updateStudentInList}
+                  handleToggleEstado={handleToggleEstado}
+                  disabled={currentPeriodoActivo === 0}
+                />
               ))
             )}
           </TableBody>
@@ -340,23 +403,50 @@ export default function ListStudent() {
 }
 
 // Subcomponente para organizar el Fragment/Rows y evitar problemas de Key
-function CardGroup({ student, showParent, setShowParent, updateStudentInList }: any) {
+function CardGroup({ student, showParent, setShowParent, updateStudentInList, handleToggleEstado, disabled }: any) {
+  const isRetirado = student.estado === 'Retirado';
+  const isEgresado = student.estado === 'Egresado';
+
   return (
     <>
-      <TableRow>
-        <TableCell>{student.alumno_dni}</TableCell>
+      <TableRow className={isRetirado ? "bg-slate-50 opacity-80" : ""}>
+        <TableCell className="font-mono text-xs">{student.alumno_dni}</TableCell>
         <TableCell>
-          {student.alumno_nombre} {student.alumno_apellido_paterno}{" "}
-          {student.alumno_apellido_materno}
+          <div className="flex flex-col">
+            <span className="font-semibold text-slate-900">
+              {student.alumno_nombre} {student.alumno_apellido_paterno}{" "}
+              {student.alumno_apellido_materno}
+            </span>
+          </div>
         </TableCell>
-        <TableCell>{student.grado}</TableCell>
+        <TableCell>
+          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+            {student.grado}
+          </Badge>
+        </TableCell>
+        <TableCell>
+          {isRetirado ? (
+            <Badge variant="destructive" className="bg-red-100 text-red-700 border-red-200">
+              Retirado
+            </Badge>
+          ) : isEgresado ? (
+            <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-amber-200">
+              Egresado
+            </Badge>
+          ) : (
+            <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100">
+              Activo
+            </Badge>
+          )}
+        </TableCell>
         <TableCell>
           {new Date(student.fecha_matricula).toLocaleDateString()}
         </TableCell>
         <TableCell className="flex justify-end gap-2">
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
+            className="text-slate-500 hover:text-blue-600 hover:bg-blue-50"
             onClick={() =>
               setShowParent(
                 showParent === student.alumno_id
@@ -364,15 +454,31 @@ function CardGroup({ student, showParent, setShowParent, updateStudentInList }: 
                   : student.alumno_id
               )
             }
+            title="Ver Apoderados"
           >
-            {showParent === student.alumno_id
-              ? "Ocultar Apoderados"
-              : "Ver Apoderados"}
+            {showParent === student.alumno_id ? "Ocultar" : "Apoderados"}
           </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleToggleEstado(student.alumno_id, student.estado)}
+            disabled={disabled || isEgresado}
+            className={isRetirado
+              ? "text-green-600 border-green-200 hover:bg-green-50"
+              : "text-red-600 border-red-200 hover:bg-red-50"
+            }
+            title={isRetirado ? "Re-incorporar Estudiante" : isEgresado ? "Alumno Egresado" : "Retirar Estudiante"}
+          >
+            {isRetirado ? <UserPlus className="w-4 h-4 mr-1" /> : <UserX className="w-4 h-4 mr-1" />}
+            {isRetirado ? "Habilitar" : "Retirar"}
+          </Button>
+
           <EditarDatosButton
             variant="outline"
             size="sm"
-            className="text-[#3E328C] border-[#3E328C] hover:bg-[#3E328C] hover:text-white"
+            disabled={disabled}
+            className={`text-[#3E328C] border-[#3E328C] hover:bg-[#3E328C] hover:text-white ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
             alumnoId={student.alumno_id}
             alumnoData={{
               dni: student.alumno_dni,
@@ -391,7 +497,7 @@ function CardGroup({ student, showParent, setShowParent, updateStudentInList }: 
       {showParent === student.alumno_id && (
         <TableRow>
           <TableCell
-            colSpan={5}
+            colSpan={6}
             className="bg-muted px-6 py-4 text-sm"
           >
             <div className="space-y-4">
@@ -402,20 +508,20 @@ function CardGroup({ student, showParent, setShowParent, updateStudentInList }: 
                     <div key={index} className="bg-white p-3 rounded border shadow-sm">
                       <div className="font-medium text-primary mb-1">{apoderado.parentesco}</div>
                       <div className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 text-sm">
-                        <span className="text-gray-500">Nombre:</span>
+                        <span className="text-slate-600 font-medium">Nombre:</span>
                         <span>{apoderado.nombre} {apoderado.apellido_paterno} {apoderado.apellido_materno}</span>
 
-                        <span className="text-gray-500">DNI:</span>
+                        <span className="text-slate-600 font-medium">DNI:</span>
                         <span>{apoderado.dni}</span>
 
-                        <span className="text-gray-500">Teléfono:</span>
+                        <span className="text-slate-600 font-medium">Teléfono:</span>
                         <span>{apoderado.telefono || "No registrado"}</span>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-gray-500 italic">No hay apoderados registrados para este alumno.</div>
+                <div className="text-slate-600 italic">No hay apoderados registrados para este alumno.</div>
               )}
             </div>
           </TableCell>

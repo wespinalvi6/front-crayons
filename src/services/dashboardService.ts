@@ -57,6 +57,12 @@ export interface Grade {
   nombre: string;
 }
 
+export interface AcademicPeriod {
+  id: number;
+  anio: number;
+  activo: number;
+}
+
 export interface DailyPayment {
   id: number;
   studentName: string;
@@ -223,6 +229,18 @@ export const fetchGradesList = async (): Promise<Grade[]> => {
     const response = await api.get('/grado/lista-grado');
     if (response.data.status) {
       return response.data.data;
+    }
+    return [];
+  } catch (error) {
+    return [];
+  }
+};
+
+export const fetchPeriodsList = async (): Promise<AcademicPeriod[]> => {
+  try {
+    const response = await api.get('/cuotas/periodos');
+    if (response.data && response.data.success) {
+      return response.data.data || [];
     }
     return [];
   } catch (error) {

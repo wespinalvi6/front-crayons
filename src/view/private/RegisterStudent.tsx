@@ -445,6 +445,9 @@ export default function RegisterStudent() {
     staleTime: 60 * 60 * 1000, // 1 hora
   });
 
+  const currentPeriodo = periodos.find((p: any) => p.anio.toString() === formData.año_academico);
+  const isPeriodoInactivo = !!(currentPeriodo && currentPeriodo.activo === 0);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === "checkbox" ? checked :
@@ -876,6 +879,15 @@ export default function RegisterStudent() {
         <h1 className="text-xl font-semibold text-slate-900">Registro de Matrícula</h1>
         <p className="text-sm text-slate-600 mt-1">Complete los datos del estudiante y apoderado</p>
       </div>
+
+      {/* Banner de Periodo Inactivo */}
+      {formData.año_academico && isPeriodoInactivo && (
+        <div className="bg-orange-50 border border-orange-200 text-orange-800 p-4 rounded-lg flex items-center gap-3 text-sm font-medium mb-4">
+          <span className="text-xl">⚠️</span>
+          El periodo académico seleccionado está <strong className="font-bold">Inactivo</strong>.
+          No se permite matricular alumnos en periodos inactivos.
+        </div>
+      )}
       {/* Stepper Header */}
       <div className="flex justify-between mb-6">
         {steps.map((s, idx) => (
@@ -1174,9 +1186,9 @@ export default function RegisterStudent() {
           {step === 2 && (
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {renderSelect("año_academico", "Año Académico", periodos.map(p => ({
+                {renderSelect("año_academico", "Año Académico", periodos.filter(p => p.activo === 1).map(p => ({
                   value: p.anio.toString(),
-                  label: p.anio.toString()
+                  label: `${p.anio}`
                 })))}
                 {renderInput("matricula_precio", "Precio Matrícula", "number")}
                 {renderInput("costo_cuota", "Costo Cuota", "number")}
@@ -1366,7 +1378,7 @@ export default function RegisterStudent() {
             Siguiente
           </Button>
         ) : (
-          <Button onClick={handleSubmit} disabled={loading}>
+          <Button onClick={handleSubmit} disabled={loading || isPeriodoInactivo}>
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />

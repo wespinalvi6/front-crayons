@@ -6,23 +6,23 @@ let content = fs.readFileSync('src/view/private/StudentPromotions.tsx', 'utf8');
 content = content.replace('import axios from "axios";', 'import api from "@/lib/axios";');
 
 // Remove BASE_URL
-content = content.replace('const BASE_URL = "http://localhost:3000/api/promocion";\n', '');
+content = content.replace('const BASE_URL = "https://api.colegiocrayons.com/api/promocion";\n', '');
 
 // Replace all occurrences of axios with api and update paths
 content = content.replace(/axios\.get\(`\$\{BASE_URL\}/g, 'api.get(`/promocion');
 content = content.replace(/axios\.post\(`\$\{BASE_URL\}/g, 'api.post(`/promocion');
 content = content.replace(/axios\.patch\(`\$\{BASE_URL\}/g, 'api.patch(`/promocion');
-content = content.replace('axios.get("http://localhost:3000/api/grado/lista-grado")', 'api.get("/grado/lista-grado")');
+content = content.replace('axios.get("https://api.colegiocrayons.com/api/grado/lista-grado")', 'api.get("/grado/lista-grado")');
 
 // Replace handleBulkPromote logic to remove gradoId
 content = content.replace(
-`            // Llamada asumiendo el procesar masivo
+    `            // Llamada asumiendo el procesar masivo
             await api.post(\`/promocion/procesar-masivo\`, {
                 periodIdActual: parseInt(selectedPeriod),
                 periodIdSiguiente: parseInt(nextPeriod.id),
                 gradoId: parseInt(selectedGradeId) // Asumimos que se puede enviar por grado para no hacer todo a la vez
             });`,
-`            // Llamada asumiendo el procesar masivo
+    `            // Llamada asumiendo el procesar masivo
             await api.post(\`/promocion/procesar-masivo\`, {
                 periodIdActual: parseInt(selectedPeriod),
                 periodIdSiguiente: parseInt(nextPeriod.id)
@@ -30,8 +30,8 @@ content = content.replace(
 );
 
 // Rewrite handleSinglePromote
-const singlePromoteOld = 
-`    const handleSinglePromote = async (student: Student) => {
+const singlePromoteOld =
+    `    const handleSinglePromote = async (student: Student) => {
         // Lógica de promoción individual
         setSingleStudentAction(null);
         setIsProcessing(true);
@@ -48,8 +48,8 @@ const singlePromoteOld =
         }
     };`;
 
-const singlePromoteNew = 
-`    const handleSinglePromote = async (student: Student) => {
+const singlePromoteNew =
+    `    const handleSinglePromote = async (student: Student) => {
         setSingleStudentAction(null);
         setIsProcessing(true);
         setError(null);
@@ -81,7 +81,7 @@ content = content.replace(singlePromoteOld, singlePromoteNew);
 
 // Rewrite handleGraduateAll
 const graduateAllOld =
-`    const handleGraduateAll = async () => {
+    `    const handleGraduateAll = async () => {
         // Lógica para egresar a todos los de 5to
         setGraduateOpen(false);
         setIsProcessing(true);
@@ -99,7 +99,7 @@ const graduateAllOld =
     };`;
 
 const graduateAllNew =
-`    const handleGraduateAll = async () => {
+    `    const handleGraduateAll = async () => {
         setGraduateOpen(false);
         setIsProcessing(true);
         setError(null);

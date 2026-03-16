@@ -43,6 +43,9 @@ export default function RegistrarAsistencia() {
   const [loading, setLoading] = useState(false);
   const [gradoSeleccionado, setGradoSeleccionado] = useState<string>("");
   const [yaRegistrada, setYaRegistrada] = useState(false);
+  const [periodos, setPeriodos] = useState<any[]>([]);
+
+  const isPeriodoInactivo = !!(periodos.find(p => p.anio.toString() === anioSeleccionado)?.activo === 0);
 
   useEffect(() => {
     const fetchAsignaciones = async () => {
@@ -61,6 +64,24 @@ export default function RegistrarAsistencia() {
       }
     };
     fetchAsignaciones();
+
+    const fetchPeriodos = async () => {
+      try {
+        const { data } = await api.get("/cuotas/periodos");
+        if (data.status) {
+          setPeriodos(data.data || []);
+          // Si el año actual no está en la lista (posible primera carga), 
+          // podríamos seleccionar el año del primer periodo activo
+          const active = data.data.find((p: any) => p.activo === 1);
+          if (active && (!anioSeleccionado || anioSeleccionado === new Date().getFullYear().toString())) {
+            setAnioSeleccionado(active.anio.toString());
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching periodos", error);
+      }
+    };
+    fetchPeriodos();
   }, [anioSeleccionado]);
 
   useEffect(() => {
@@ -208,7 +229,7 @@ export default function RegistrarAsistencia() {
           )}
           <Button
             onClick={handleGuardarAsistencia}
-            disabled={loading || alumnos.length === 0 || yaRegistrada}
+            disabled={loading || alumnos.length === 0 || yaRegistrada || isPeriodoInactivo}
             className="h-8 px-4 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs shadow-none border-none transition-all active:scale-95 disabled:opacity-50"
           >
             {loading ? "Procesando..." : (
@@ -223,6 +244,14 @@ export default function RegistrarAsistencia() {
 
       {/* Content */}
       <div className="flex-1 p-6 space-y-4">
+        {/* Banner de Periodo Inactivo */}
+        {isPeriodoInactivo && (
+          <div className="bg-orange-50 border border-orange-200 text-orange-800 p-3 rounded-md flex items-center gap-3 text-[11px] font-bold uppercase tracking-tight mb-2">
+            <AlertCircle size={16} />
+            El periodo seleccionado está Inactivo. No se permite registrar asistencia.
+          </div>
+        )}
+
         {/* Compact Stats row */}
         <div className="flex items-center gap-6 text-[11px]">
           <div className="flex gap-1.5 items-center">
@@ -248,10 +277,19 @@ export default function RegistrarAsistencia() {
               <select
                 value={anioSeleccionado}
                 onChange={(e) => setAnioSeleccionado(e.target.value)}
-                className="w-full h-8 px-3 pr-8 bg-white border border-slate-200 rounded-md text-xs font-medium focus:outline-none focus:ring-1 focus:ring-blue-500 appearance-none cursor-pointer"
+                className={`w-full h-8 px-3 pr-8 bg-white border ${isPeriodoInactivo ? 'border-orange-200 text-orange-600' : 'border-slate-200'} rounded-md text-xs font-medium focus:outline-none focus:ring-1 focus:ring-blue-500 appearance-none cursor-pointer`}
               >
-                <option value="2026">Ciclo 2026</option>
-                <option value="2025">Ciclo 2025</option>
+                {periodos.map((p: any) => (
+                  <option key={p.id} value={p.anio.toString()}>
+                    Ciclo {p.anio} {p.activo === 0 ? "(Inactivo)" : ""}
+                  </option>
+                ))}
+                {periodos.length === 0 && (
+                  <>
+                    <option value="2026">Ciclo 2026</option>
+                    <option value="2025">Ciclo 2025</option>
+                  </>
+                )}
               </select>
               <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
             </div>
@@ -292,7 +330,7 @@ export default function RegistrarAsistencia() {
           </div>
 
           <div className="flex items-center gap-3">
-            {alumnos.length > 0 && (
+            {alumnos.length > 0 && !isPeriodoInactivo && (
               <button
                 onClick={() => setAlumnos(alumnos.map(al => ({ ...al, asistio: true })))}
                 className="text-[10px] font-bold text-blue-600 hover:text-blue-700 uppercase tracking-widest bg-blue-50 px-3 py-1.5 rounded-md transition-all active:scale-95"
@@ -364,11 +402,12 @@ export default function RegistrarAsistencia() {
                         </td>
                         <td className="px-5 py-3">
                           <div className="flex justify-end pr-8">
-                            <label className="relative inline-flex items-center cursor-pointer scale-90">
+                            <label className={`relative inline-flex items-center ${isPeriodoInactivo ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} scale-90`}>
                               <input
                                 type="checkbox"
                                 checked={alumno.asistio}
-                                onChange={(e) => handleAsistenciaChange(alumno.id_alumno, e.target.checked)}
+                                onChange={(e) => !isPeriodoInactivo && handleAsistenciaChange(alumno.id_alumno, e.target.checked)}
+                                disabled={isPeriodoInactivo}
                                 className="sr-only peer"
                               />
                               <div className="w-9 h-5 bg-slate-100 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
@@ -390,6 +429,6 @@ export default function RegistrarAsistencia() {
         <p>System Ledger v3.0</p>
         <p>© 2026 Academic Intel</p>
       </div>
-    </div>
+    </div >
   );
 }

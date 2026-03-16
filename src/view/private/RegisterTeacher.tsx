@@ -149,6 +149,9 @@ export default function RegisterTeacher() {
     }
   }, [periodos, currentYear]);
 
+  const currentPeriodo = periodos.find((p: any) => p.id.toString() === formData.id_periodo);
+  const isPeriodoInactivo = !!(currentPeriodo && currentPeriodo.activo === 0);
+
   // 2) Fetch disponibilidad dependiente de currentYear
   const { data: cursosDisponibles = [] } = useQuery<CursoItem[]>({
     queryKey: ['disponibilidadCursos', currentYear],
@@ -308,6 +311,15 @@ export default function RegisterTeacher() {
         <h1 className="text-xl font-semibold text-slate-900">Registro de Docente</h1>
         <p className="text-sm text-slate-600 mt-1">Complete los datos del docente y asigne sus cursos</p>
       </div>
+
+      {/* Banner de Periodo Inactivo */}
+      {formData.id_periodo && isPeriodoInactivo && (
+        <div className="bg-orange-50 border border-orange-200 text-orange-800 p-4 rounded-lg flex items-center gap-3 text-sm font-medium mb-4">
+          <span className="text-xl">⚠️</span>
+          El periodo académico seleccionado está <strong className="font-bold">Inactivo</strong>.
+          No se permite registrar docentes en periodos inactivos.
+        </div>
+      )}
 
       {successMessage && (
         <div className="bg-blue-50 border border-blue-200 rounded p-3 mb-4 text-sm text-blue-800">
@@ -499,9 +511,9 @@ export default function RegisterTeacher() {
                   <SelectValue placeholder="Seleccione período..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {periodos.map((p: any) => (
+                  {periodos.filter((p: any) => p.activo === 1).map((p: any) => (
                     <SelectItem key={p.id} value={p.id.toString()} className="text-sm">
-                      Año {p.anio} {p.activo === 1 ? "(Actual)" : ""}
+                      Año {p.anio}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -589,7 +601,7 @@ export default function RegisterTeacher() {
           </div>
 
           <div className="flex justify-end pt-2">
-            <Button onClick={handleGuardar} disabled={loading}>
+            <Button onClick={handleGuardar} disabled={loading || isPeriodoInactivo}>
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />

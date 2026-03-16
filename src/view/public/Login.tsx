@@ -98,9 +98,8 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-100 font-sans antialiased p-4">
-      <div className="flex w-full max-w-4xl bg-white rounded-2xl overflow-hidden shadow-xl">
-
+    <div className="bg-slate-100 font-sans antialiased p-4 flex items-center justify-center h-[calc(100vh-40px)] md:h-[calc(100vh-30px)]">
+      <div className="flex w-full max-w-4xl bg-white rounded-2xl overflow-hidden shadow-xl ">
         {/* LADO IZQUIERDO: Branding */}
         <div className="hidden md:flex md:w-1/2 relative bg-gradient-to-br from-slate-900 to-slate-700">
           <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=1200')] bg-cover bg-center opacity-20"></div>

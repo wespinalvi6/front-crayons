@@ -21,9 +21,11 @@ import {
   fetchDebtorsReport,
   fetchGradesList,
   fetchDailyPayments,
+  fetchPeriodsList,
   type DebtorReportItem,
   type DailyPayment,
-  type Grade as GradeFromService
+  type Grade as GradeFromService,
+  type AcademicPeriod
 } from "@/services/dashboardService";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -63,7 +65,7 @@ interface DatosEstudiante {
   grado: string;
   anio: string;
   resumen: ResumenEstudiante;
-  detalle: PagoDetalle[];
+  detalle: (PagoDetalle & { periodo_activo?: number; matricula_estado?: string })[];
   dni: string;
 }
 
@@ -101,17 +103,22 @@ const CuotasDetalle = () => {
   const [isReportLoading, setIsReportLoading] = useState(false);
   const [isDailyLoading, setIsDailyLoading] = useState(false);
   const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
+  const [periods, setPeriods] = useState<AcademicPeriod[]>([]);
 
-  // Cargar grados al montar
+  // Cargar datos al montar
   useEffect(() => {
-    const loadGrades = async () => {
+    const loadData = async () => {
       try {
-        const gradesList = await fetchGradesList();
+        const [gradesList, periodsList] = await Promise.all([
+          fetchGradesList(),
+          fetchPeriodsList()
+        ]);
         setGrades(gradesList);
+        setPeriods(periodsList);
       } catch (error) {
       }
     };
-    loadGrades();
+    loadData();
   }, []);
 
   const toggleExpand = (dni: string) => {
@@ -392,14 +399,24 @@ const CuotasDetalle = () => {
                     onKeyDown={(e) => e.key === 'Enter' && buscarEstudiante()}
                   />
                 </div>
-                <div className="relative w-full md:w-32">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Año"
-                    className="pl-10 h-9 bg-white border border-slate-300 rounded text-sm focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500"
-                    value={año}
-                    onChange={(e) => setAño(e.target.value)}
-                  />
+                <div className="relative w-full md:w-36">
+                  <Select value={año} onValueChange={setAño}>
+                    <SelectTrigger className="h-9 bg-white border border-slate-300 rounded pl-10 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 w-full relative">
+                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
+                      <SelectValue placeholder="Año" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {periods.length > 0 ? (
+                        periods.map(period => (
+                          <SelectItem key={period.id} value={period.anio.toString()}>
+                            {period.anio} {period.activo === 0 ? '(Inactivo)' : ''}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value={año}>{año}</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <Button
                   onClick={buscarEstudiante}
@@ -416,7 +433,7 @@ const CuotasDetalle = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-1 space-y-6">
                 <Card className="border-none shadow-md overflow-hidden">
-                  <div className="h-2 bg-blue-600" />
+                  <div className={`h-2 ${datosEstudiante.detalle[0]?.periodo_activo === 0 || datosEstudiante.detalle[0]?.matricula_estado === 'Retirado' ? 'bg-amber-500' : 'bg-blue-600'}`} />
                   <CardContent className="pt-6">
                     <div className="flex flex-col items-center text-center">
                       <div className="h-20 w-20 bg-blue-50 rounded-full flex items-center justify-center mb-4">
@@ -424,9 +441,29 @@ const CuotasDetalle = () => {
                       </div>
                       <h3 className="text-xl font-bold text-gray-900">{datosEstudiante.estudiante}</h3>
                       <p className="text-gray-500 font-medium">{datosEstudiante.grado}</p>
-                      <Badge variant="outline" className="mt-2">DNI: {datosEstudiante.dni}</Badge>
+                      <div className="flex flex-wrap justify-center gap-2 mt-2">
+                        <Badge variant="outline">DNI: {datosEstudiante.dni}</Badge>
+                        {datosEstudiante.detalle[0]?.matricula_estado === 'Retirado' && (
+                          <Badge variant="destructive" className="animate-pulse">RETIRADO</Badge>
+                        )}
+                        {datosEstudiante.detalle[0]?.periodo_activo === 0 && (
+                          <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-amber-200">PERIODO INACTIVO</Badge>
+                        )}
+                      </div>
                     </div>
-                    <div className="mt-8 space-y-4">
+
+                    {(datosEstudiante.detalle[0]?.periodo_activo === 0 || datosEstudiante.detalle[0]?.matricula_estado === 'Retirado') && (
+                      <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800 flex items-start gap-2">
+                        <div className="mt-0.5">⚠️</div>
+                        <p>
+                          {datosEstudiante.detalle[0]?.matricula_estado === 'Retirado'
+                            ? 'Este estudiante figura como Retirado. Los cobros manuales están deshabilitados.'
+                            : 'El periodo académico está inactivo. Solo se pueden registrar pagos en periodos activos.'}
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="mt-6 space-y-4">
                       <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                         <span className="text-sm text-gray-600">Total Pagado</span>
                         <span className="font-bold text-green-600 font-mono">S/ {parseFloat(datosEstudiante.resumen.monto_total_pagado).toFixed(2)}</span>
@@ -459,6 +496,7 @@ const CuotasDetalle = () => {
                             <Button
                               size="sm"
                               variant="outline"
+                              disabled={matriculaInfo.periodo_activo === 0 || matriculaInfo.matricula_estado === 'Retirado'}
                               onClick={() => {
                                 setMontoPagadoReq(matriculaInfo.monto);
                                 setMetodoPago('Efectivo');
@@ -466,7 +504,7 @@ const CuotasDetalle = () => {
                                 setPagoMatriculaPresencial(true);
                                 setShowMatriculaDialog(true);
                               }}
-                              className="text-xs h-8 bg-blue-600 text-white border-blue-600 hover:bg-blue-700 hover:border-blue-700"
+                              className="text-xs h-8 bg-blue-600 text-white border-blue-600 hover:bg-blue-700 hover:border-blue-700 disabled:opacity-50 disabled:bg-gray-400 disabled:border-gray-400"
                             >
                               Registrar Pago
                             </Button>
@@ -525,7 +563,8 @@ const CuotasDetalle = () => {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-8"
+                                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-8 disabled:opacity-30"
+                                    disabled={cuota.periodo_activo === 0 || cuota.matricula_estado === 'Retirado'}
                                     onClick={() => {
                                       setCuotaSeleccionada(cuota);
                                       setMontoPagadoReq(cuota.monto);
@@ -588,11 +627,22 @@ const CuotasDetalle = () => {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div>
                   <label className="text-sm font-medium mb-1 block">Año</label>
-                  <Input
-                    value={selectedYear}
-                    onChange={(e) => setSelectedYear(e.target.value)}
-                    className="h-9 bg-white border border-slate-300 rounded px-3 text-sm focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500"
-                  />
+                  <Select value={selectedYear} onValueChange={setSelectedYear}>
+                    <SelectTrigger className="h-9 bg-white border border-slate-300 rounded px-3 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                      <SelectValue placeholder="Seleccionar año" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {periods.length > 0 ? (
+                        periods.map(period => (
+                          <SelectItem key={period.id} value={period.anio.toString()}>
+                            {period.anio} {period.activo === 0 ? '(Inactivo)' : ''}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value={selectedYear}>{selectedYear}</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-1 block">Grado</label>

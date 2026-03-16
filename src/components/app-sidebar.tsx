@@ -117,7 +117,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         icon: CreditCard,
         items: [
           {
-            title: "Programar cuota",
+            title: "Programar periodo",
             url: "/dashboard/programar-cuotas",
           },
           {
@@ -130,7 +130,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   };
 
   return (
-    <Sidebar className="border-r border-slate-200 bg-white" {...props}>
+    <Sidebar className="border-r border-sidebar-border" {...props}>
       <SidebarHeader className="h-16 flex items-center justify-center px-4 border-b border-slate-100">
         <Link to="/dashboard" className="flex items-center justify-center w-full">
           <img

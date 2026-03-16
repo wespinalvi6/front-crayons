@@ -76,19 +76,19 @@ export default function DashboardHome() {
 
   if (isLoading) {
     return (
-      <div className="flex h-[80vh] flex-col items-center justify-center text-slate-500">
-        <Loader2 className="h-8 w-8 animate-spin mb-4 text-slate-400" />
-        <p className="text-sm font-medium">Cargando información del panel...</p>
+      <div className="flex h-[80vh] flex-col items-center justify-center text-slate-600">
+        <Loader2 className="h-8 w-8 animate-spin mb-4 text-blue-600" />
+        <p className="text-sm font-medium text-slate-700">Cargando información del panel...</p>
       </div>
     );
   }
 
   if (!summaryData) {
     return (
-      <div className="flex h-[80vh] flex-col items-center justify-center text-slate-500">
+      <div className="flex h-[80vh] flex-col items-center justify-center text-slate-600">
         <AlertCircle className="h-10 w-10 text-red-500 mb-4" />
         <h2 className="text-lg font-semibold text-slate-900">Error al cargar datos</h2>
-        <p className="text-sm mt-1">Por favor, intente nuevamente más tarde.</p>
+        <p className="text-sm mt-1 text-slate-600">Por favor, intente nuevamente más tarde.</p>
       </div>
     );
   }
@@ -96,8 +96,8 @@ export default function DashboardHome() {
   const { kpis, distribucion_sexo, tendencia_ingresos, comparativa_pagos } = summaryData;
 
   const paymentStatusData = [
-    { label: "Pagado", value: comparativa_pagos.pagado, color: "#0f172a" }, // Dark slate
-    { label: "Pendiente", value: comparativa_pagos.pendiente, color: "#e2e8f0" } // Light slate
+    { label: "Pagado", value: comparativa_pagos.pagado, color: "#1d4ed8" },
+    { label: "Pendiente", value: comparativa_pagos.pendiente, color: "#f87171" }
   ];
 
   const monthlyTrendData = tendencia_ingresos.map(item => ({
@@ -112,14 +112,14 @@ export default function DashboardHome() {
     : 0;
 
   return (
-    <div className="flex-1 bg-white p-6 md:p-8">
-      {/* Header Section */}
+    <div className="flex-1 bg-transparent p-6 md:p-8">
+      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Resumen General</h1>
-          <p className="text-sm text-slate-500 mt-1">Visión global de ingresos, población y estado de pagos.</p>
+          <p className="text-sm text-slate-600 mt-1">Visión global de ingresos, población y estado de pagos.</p>
         </div>
-        <div className="hidden md:flex items-center gap-2 text-sm text-slate-500 bg-slate-50 px-3 py-1.5 rounded-md border border-slate-200">
+        <div className="hidden md:flex items-center gap-2 text-sm text-slate-700 bg-slate-100 px-3 py-1.5 rounded-md border border-slate-200">
           <div className="w-2 h-2 rounded-full bg-emerald-500" />
           Actualizado: {new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}
         </div>
@@ -130,37 +130,36 @@ export default function DashboardHome() {
         <MetricCard
           title="Ingresos Mensuales"
           value={formatCurrency(kpis.ingresos_mensuales)}
-          icon={<DollarSign className="h-4 w-4 text-slate-500" />}
+          icon={<DollarSign className="h-4 w-4 text-blue-600" />}
           trend={`${crecimiento >= 0 ? '+' : ''}${crecimiento.toFixed(1)}% respecto al mes anterior`}
           trendPositive={crecimiento >= 0}
         />
         <MetricCard
           title="Estudiantes Activos"
           value={formatNumber(kpis.estudiantes_activos)}
-          icon={<Users className="h-4 w-4 text-slate-500" />}
+          icon={<Users className="h-4 w-4 text-blue-600" />}
           description="Total de población matriculada"
         />
         <MetricCard
           title="Morosidad Total"
           value={formatCurrency(kpis.pagos_pendientes)}
-          icon={<AlertCircle className="h-4 w-4 text-slate-500" />}
+          icon={<AlertCircle className="h-4 w-4 text-red-600" />}
           description={`${kpis.estudiantes_con_deuda} estudiantes con deuda`}
           highlight="danger"
         />
         <MetricCard
           title="Tasa de Recaudación"
           value={`${kpis.tasa_recaudacion}%`}
-          icon={<CreditCard className="h-4 w-4 text-slate-500" />}
+          icon={<CreditCard className="h-4 w-4 text-blue-600" />}
           trend={kpis.tasa_recaudacion >= kpis.meta_mensual ? 'Meta mensual alcanzada' : 'Por debajo de la meta'}
           trendPositive={kpis.tasa_recaudacion >= kpis.meta_mensual}
         />
       </div>
 
-      {/* Main Content Grid */}
+      {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        {/* Charts Section */}
-        <Card className="lg:col-span-2 shadow-sm border-slate-200">
-          <CardHeader className="pb-2">
+        <Card className="lg:col-span-2 shadow-sm border border-slate-200">
+          <CardHeader className="pb-2 border-b border-slate-100">
             <CardTitle className="text-base font-semibold text-slate-900">Tendencia de Ingresos Anual</CardTitle>
           </CardHeader>
           <CardContent>
@@ -169,11 +168,11 @@ export default function DashboardHome() {
                 <SimpleLineChart
                   data={monthlyTrendData}
                   height={280}
-                  color="#0f172a"
+                  color="#1d4ed8"
                   showDots={true}
                 />
               ) : (
-                <div className="h-full flex items-center justify-center text-slate-400 text-sm">
+                <div className="h-full flex items-center justify-center text-slate-500 text-sm font-medium">
                   No hay datos suficientes para graficar
                 </div>
               )}
@@ -181,9 +180,8 @@ export default function DashboardHome() {
           </CardContent>
         </Card>
 
-        {/* Payments Status Pie Chart */}
-        <Card className="shadow-sm border-slate-200">
-          <CardHeader className="pb-2">
+        <Card className="shadow-sm border border-slate-200">
+          <CardHeader className="pb-2 border-b border-slate-100">
             <CardTitle className="text-base font-semibold text-slate-900">Estado de Recaudación</CardTitle>
           </CardHeader>
           <CardContent>
@@ -191,10 +189,10 @@ export default function DashboardHome() {
               <SimplePieChart data={paymentStatusData} size={180} showLegend={false} />
               <div className="w-full mt-8 space-y-3">
                 {paymentStatusData.map((item, idx) => (
-                  <div key={idx} className="flex items-center justify-between">
+                  <div key={idx} className="flex items-center justify-between py-1 border-b border-slate-100 last:border-0">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: item.color }} />
-                      <span className="text-sm font-medium text-slate-600">{item.label}</span>
+                      <span className="text-sm font-medium text-slate-700">{item.label}</span>
                     </div>
                     <span className="text-sm font-bold text-slate-900">{formatCurrency(item.value)}</span>
                   </div>
@@ -205,12 +203,12 @@ export default function DashboardHome() {
         </Card>
       </div>
 
-      {/* Detailed Lists Grid */}
+      {/* Lists Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Sex Distribution */}
-        <Card className="shadow-sm border-slate-200">
-          <CardHeader className="pb-2">
+
+        {/* Distribución por sexo */}
+        <Card className="shadow-sm border border-slate-200">
+          <CardHeader className="pb-2 border-b border-slate-100">
             <CardTitle className="text-base font-semibold text-slate-900">Distribución por Sexo</CardTitle>
           </CardHeader>
           <CardContent>
@@ -220,7 +218,7 @@ export default function DashboardHome() {
                   <div className="text-3xl font-bold text-slate-900 tracking-tight">
                     {formatNumber(item.cantidad)}
                   </div>
-                  <div className="text-sm font-medium text-slate-500 mt-1">
+                  <div className="text-sm font-semibold text-slate-600 mt-1">
                     {item.sexo === 'M' ? 'Hombres' : 'Mujeres'}
                   </div>
                 </div>
@@ -229,49 +227,49 @@ export default function DashboardHome() {
           </CardContent>
         </Card>
 
-        {/* Recent Payments */}
-        <Card className="shadow-sm border-slate-200">
-          <CardHeader className="pb-2 flex flex-row items-center justify-between">
+        {/* Últimos Pagos */}
+        <Card className="shadow-sm border border-slate-200">
+          <CardHeader className="pb-2 border-b border-slate-100">
             <CardTitle className="text-base font-semibold text-slate-900">Últimos Pagos</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4 pt-2">
+            <div className="space-y-3 pt-2">
               {recentPayments.length > 0 ? recentPayments.slice(0, 5).map((p) => (
-                <div key={p.id} className="flex items-center justify-between">
+                <div key={p.id} className="flex items-center justify-between py-1 border-b border-slate-100 last:border-0">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-slate-900 truncate">{p.studentName}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{p.type}</p>
+                    <p className="text-sm font-semibold text-slate-900 truncate">{p.studentName}</p>
+                    <p className="text-xs text-slate-600 mt-0.5">{p.type}</p>
                   </div>
-                  <span className="text-sm font-semibold text-emerald-600 ml-4 whitespace-nowrap">
+                  <span className="text-sm font-bold text-emerald-700 ml-4 whitespace-nowrap bg-emerald-50 px-2 py-0.5 rounded">
                     +{formatCurrency(p.amount)}
                   </span>
                 </div>
               )) : (
-                <div className="text-center text-sm text-slate-500 py-4">No hay pagos recientes</div>
+                <div className="text-center text-sm text-slate-600 py-4 font-medium">No hay pagos recientes</div>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Debtors List */}
-        <Card className="shadow-sm border-slate-200">
-          <CardHeader className="pb-2">
+        {/* Estudiantes en Mora */}
+        <Card className="shadow-sm border border-slate-200">
+          <CardHeader className="pb-2 border-b border-slate-100">
             <CardTitle className="text-base font-semibold text-slate-900">Estudiantes en Mora</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4 pt-2">
+            <div className="space-y-3 pt-2">
               {debtors.length > 0 ? debtors.slice(0, 5).map((d) => (
-                <div key={d.id} className="flex items-center justify-between">
+                <div key={d.id} className="flex items-center justify-between py-1 border-b border-slate-100 last:border-0">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-slate-900 truncate">{d.studentName}</p>
-                    <p className="text-xs text-red-500 font-medium mt-0.5">{d.months} {d.months === 1 ? 'mes' : 'meses'} de atraso</p>
+                    <p className="text-sm font-semibold text-slate-900 truncate">{d.studentName}</p>
+                    <p className="text-xs text-red-700 font-semibold mt-0.5">{d.months} {d.months === 1 ? 'mes' : 'meses'} de atraso</p>
                   </div>
-                  <span className="text-sm font-semibold text-red-600 ml-4 whitespace-nowrap">
+                  <span className="text-sm font-bold text-red-700 ml-4 whitespace-nowrap bg-red-50 px-2 py-0.5 rounded">
                     {formatCurrency(d.amount)}
                   </span>
                 </div>
               )) : (
-                <div className="text-center text-sm text-slate-500 py-4">No hay morosidad registrada</div>
+                <div className="text-center text-sm text-slate-600 py-4 font-medium">No hay morosidad registrada</div>
               )}
             </div>
           </CardContent>
@@ -282,29 +280,30 @@ export default function DashboardHome() {
   );
 }
 
-// Minimalist, high contrast Metric Card
 function MetricCard({ title, value, icon, description, trend, trendPositive, highlight }: any) {
   return (
-    <Card className="shadow-sm border-slate-200">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-slate-500">{title}</h3>
-          {icon}
+    <Card className="shadow-sm border border-slate-200">
+      <CardContent className="p-5">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-slate-700">{title}</h3>
+          <div className="p-1.5 bg-slate-50 border border-slate-200 rounded-md">
+            {icon}
+          </div>
         </div>
         <div className="flex flex-col gap-1">
-          <span className={`text-2xl font-bold tracking-tight ${highlight === 'danger' ? 'text-red-600' : 'text-slate-900'}`}>
+          <span className={`text-2xl font-bold tracking-tight ${highlight === 'danger' ? 'text-red-700' : 'text-slate-900'}`}>
             {value}
           </span>
-          
+
           {trend && (
-            <p className={`text-xs flex items-center gap-1 mt-1 font-medium ${trendPositive ? 'text-emerald-600' : 'text-red-600'}`}>
+            <p className={`text-xs flex items-center gap-1 mt-1 font-semibold ${trendPositive ? 'text-emerald-700' : 'text-red-700'}`}>
               {trendPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
               {trend}
             </p>
           )}
 
           {description && !trend && (
-            <p className="text-xs text-slate-500 mt-1 font-medium">{description}</p>
+            <p className="text-xs text-slate-600 mt-1 font-medium">{description}</p>
           )}
         </div>
       </CardContent>

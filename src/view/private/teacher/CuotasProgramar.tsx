@@ -136,13 +136,17 @@ export default function CuotasProgramar() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (id: number) => {
     if (confirm("¿Estás seguro de eliminar este periodo?")) {
-      // API Call to delete would go here when endpoint is available
-      // await axios.delete(`https://api.colegiocrayons.com/api/cuotas/${id}`);
-      // For now, optimistic update for UX if we had the endpoint
-      // setFees(prev => prev.filter(f => f.id !== id));
-      alert("Funcionalidad de eliminar pendiente de endpoint");
+      try {
+        const response = await axios.delete(`https://api.colegiocrayons.com/api/cuotas/eliminar-periodo/${id}`);
+        if (response.data.success) {
+          alert("Periodo eliminado correctamente");
+          queryClient.invalidateQueries({ queryKey: ['periodosCuotas'] });
+        }
+      } catch (error) {
+        alert("Error al eliminar el periodo");
+      }
     }
   };
 
@@ -157,15 +161,16 @@ export default function CuotasProgramar() {
       };
 
       if (editingId) {
-        // Edit logic would go here when endpoint is available
-        // await axios.put(`https://api.colegiocrayons.com/api/cuotas/${editingId}`, payload);
-        alert("Funcionalidad de editar pendiente de endpoint");
+        const response = await axios.put(`https://api.colegiocrayons.com/api/cuotas/actualizar-periodo/${editingId}`, payload);
+        if (response.data.success) {
+          alert("Periodo actualizado correctamente");
+          queryClient.invalidateQueries({ queryKey: ['periodosCuotas'] });
+        }
       } else {
         // Create Logic
         const response = await axios.post('https://api.colegiocrayons.com/api/cuotas/agregar-periodo', payload);
         if (response.status === 200 || response.status === 201) {
           alert("Creado correctamente");
-          // Invalidar caché para refetch de la tabla
           queryClient.invalidateQueries({ queryKey: ['periodosCuotas'] });
         }
       }
@@ -238,7 +243,7 @@ export default function CuotasProgramar() {
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50" onClick={() => openEditDialog(fee)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleDelete()}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleDelete(fee.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>

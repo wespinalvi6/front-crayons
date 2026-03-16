@@ -50,6 +50,7 @@ interface EditarDatosButtonProps {
     ap_m: string;
     fecha_nacimiento: string;
   };
+  disabled?: boolean;
 }
 
 export default function EditarDatosButton({
@@ -59,7 +60,8 @@ export default function EditarDatosButton({
   size = "default",
   children,
   alumnoId,
-  alumnoData
+  alumnoData,
+  disabled = false
 }: EditarDatosButtonProps) {
   const { token } = useAuth();
   const [, setDatosAlumno] = useState<DatosAlumno | null>(null);
@@ -206,6 +208,7 @@ export default function EditarDatosButton({
           onClick={handleOpenModal}
           variant={variant}
           size={size}
+          disabled={disabled}
           className={className}
         >
           {children || (
@@ -308,8 +311,8 @@ export default function EditarDatosButton({
 
             {message && (
               <div className={`p-3 rounded-md mb-4 ${message.isError
-                  ? 'bg-red-100 text-red-700 border border-red-300'
-                  : 'bg-green-100 text-green-700 border border-green-300'
+                ? 'bg-red-100 text-red-700 border border-red-300'
+                : 'bg-green-100 text-green-700 border border-green-300'
                 }`}>
                 {message.text}
               </div>
