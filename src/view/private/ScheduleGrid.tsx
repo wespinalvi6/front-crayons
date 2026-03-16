@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "@/lib/axios";
-import { CalendarDays, Filter, Loader2, Clock, ChevronDown, ChevronRight } from "lucide-react";
+import { CalendarDays, Filter, Loader2, Clock, ChevronDown } from "lucide-react";
 
 type PeriodoItem = { id: number; anio: number; activo: number };
 type DocenteItem = { id: number; nombre_completo: string };
