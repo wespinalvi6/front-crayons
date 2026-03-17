@@ -60,13 +60,17 @@ export default function JustificacionesDocente() {
   const [activeTab, setActiveTab] = useState<"pendientes" | "historial">("pendientes");
   const [estadoFiltro, setEstadoFiltro] = useState<"Todos" | "Aprobada" | "Rechazada">("Todos");
 
-  const fetchJustificaciones = useCallback(async () => {
+  const fetchJustificaciones = useCallback(async (fetchAllPendientes = false) => {
     setLoading(true);
     try {
       let urlApi = "";
       if (activeTab === "pendientes") {
-        const [year, month, day] = fechaInput.split("-");
-        urlApi = `/justificacion/docente/pendientes?anio=${year}&mes=${parseInt(month)}&dia=${parseInt(day)}`;
+        if (!fetchAllPendientes && fechaInput) {
+          const [year, month, day] = fechaInput.split("-");
+          urlApi = `/justificacion/docente/pendientes?anio=${year}&mes=${parseInt(month)}&dia=${parseInt(day)}`;
+        } else {
+          urlApi = `/justificacion/docente/pendientes`;
+        }
       } else {
         urlApi = `/justificacion/docente/historial`;
         if (estadoFiltro !== "Todos") {
@@ -76,6 +80,7 @@ export default function JustificacionesDocente() {
       const res = await api.get(urlApi);
       if (res.data.success) {
         let rawData = res.data.data;
+        // Si el backend devuelve un array plano (como acabamos de cambiar), no hace falta flatMap
         if (rawData.length > 0 && rawData[0].solicitudes) {
           rawData = rawData.flatMap((group: any) => group.solicitudes);
         }
@@ -198,13 +203,23 @@ export default function JustificacionesDocente() {
             )}
           </div>
 
-          <Button
-            onClick={fetchJustificaciones}
-            disabled={loading}
-            className="h-8 px-6 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-none border-none transition-all active:scale-95 uppercase tracking-wider"
-          >
-            {loading ? "..." : <><Search size={14} className="mr-2" /> Consultar</>}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => fetchJustificaciones(true)}
+              disabled={loading}
+              variant="outline"
+              className="h-8 px-4 rounded-md text-blue-600 border-blue-200 text-xs font-bold transition-all uppercase tracking-wider"
+            >
+              Ver Todas
+            </Button>
+            <Button
+              onClick={() => fetchJustificaciones(false)}
+              disabled={loading}
+              className="h-8 px-6 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-none border-none transition-all active:scale-95 uppercase tracking-wider"
+            >
+              {loading ? "..." : <><Search size={14} className="mr-2" /> Consultar</>}
+            </Button>
+          </div>
         </div>
 
         {/* Table Clean Professional */}
@@ -234,7 +249,7 @@ export default function JustificacionesDocente() {
                   ) : justificaciones.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="px-5 py-16 text-center text-slate-900 font-medium bg-white uppercase tracking-widest text-[10px]">
-                        Cero solicitudes pendientes para este día
+                        No se encontraron justificaciones {activeTab === "pendientes" ? "pendientes" : "en el historial"}
                       </td>
                     </tr>
                   ) : (
