@@ -134,18 +134,18 @@ const CuotasDetalle = () => {
     });
   };
 
-  const showConfirm = (title: string, description: string, onConfirm: () => void, type: "info" | "success" | "danger" | "warning" = "info") => {
-    setModalConfig({
-      isOpen: true,
-      title,
-      description,
-      onConfirm,
-      confirmText: "Confirmar",
-      cancelText: "Cancelar",
-      showCancel: true,
-      type
-    });
-  };
+  // const showConfirm = (title: string, description: string, onConfirm: () => void, type: "info" | "success" | "danger" | "warning" = "info") => {
+  //   setModalConfig({
+  //     isOpen: true,
+  //     title,
+  //     description,
+  //     onConfirm,
+  //     confirmText: "Confirmar",
+  //     cancelText: "Cancelar",
+  //     showCancel: true,
+  //     type
+  //   });
+  // };
 
   // Cargar datos al montar
   useEffect(() => {
