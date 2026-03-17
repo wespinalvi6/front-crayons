@@ -7,7 +7,6 @@ import api from "@/lib/axios";
 interface Message {
     role: "user" | "assistant";
     text: string;
-    data?: any[];
 }
 
 export function AiAssistant() {
@@ -48,7 +47,6 @@ export function AiAssistant() {
                 {
                     role: "assistant",
                     text: data.respuesta || "No pude obtener una respuesta.",
-                    data: data.datos,
                 },
             ]);
         } catch (err: any) {
@@ -73,12 +71,7 @@ export function AiAssistant() {
         }
     };
 
-    const suggestions = [
-        "¿Cuántos alumnos hay?",
-        "¿Cuál es la asistencia de hoy?",
-        "¿Cuántos docentes activos hay?",
-        "¿Cuánto se ha recaudado este mes?",
-    ];
+
 
     return (
         <>
@@ -86,8 +79,8 @@ export function AiAssistant() {
             <button
                 onClick={() => setOpen((o) => !o)}
                 className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-xl flex items-center justify-center transition-all duration-300 group ${open
-                        ? "bg-slate-800 rotate-0"
-                        : "bg-gradient-to-br from-blue-600 to-indigo-600 hover:scale-105 hover:shadow-2xl hover:shadow-blue-200"
+                    ? "bg-slate-800 rotate-0"
+                    : "bg-gradient-to-br from-blue-600 to-indigo-600 hover:scale-105 hover:shadow-2xl hover:shadow-blue-200"
                     }`}
                 title="Asistente IA"
             >
@@ -104,8 +97,8 @@ export function AiAssistant() {
             {/* Chat Panel */}
             <div
                 className={`fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col transition-all duration-300 origin-bottom-right ${open
-                        ? "opacity-100 scale-100 pointer-events-auto"
-                        : "opacity-0 scale-95 pointer-events-none"
+                    ? "opacity-100 scale-100 pointer-events-auto"
+                    : "opacity-0 scale-95 pointer-events-none"
                     }`}
                 style={{ maxHeight: "520px" }}
             >
@@ -140,47 +133,12 @@ export function AiAssistant() {
                             )}
                             <div
                                 className={`max-w-[80%] rounded-xl px-3 py-2 text-xs leading-relaxed ${msg.role === "user"
-                                        ? "bg-blue-600 text-white rounded-br-none"
-                                        : "bg-slate-100 text-slate-800 rounded-bl-none"
+                                    ? "bg-blue-600 text-white rounded-br-none"
+                                    : "bg-slate-100 text-slate-800 rounded-bl-none"
                                     }`}
                             >
                                 <p>{msg.text}</p>
-                                {msg.data && msg.data.length > 0 && (
-                                    <div className="mt-2 border-t border-slate-200 pt-2">
-                                        <div className="overflow-x-auto">
-                                            <table className="text-[10px] w-full">
-                                                <thead>
-                                                    <tr>
-                                                        {Object.keys(msg.data[0]).map((k) => (
-                                                            <th
-                                                                key={k}
-                                                                className="text-left font-bold text-slate-500 pr-3 pb-1 uppercase"
-                                                            >
-                                                                {k}
-                                                            </th>
-                                                        ))}
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {msg.data.slice(0, 5).map((row, ri) => (
-                                                        <tr key={ri}>
-                                                            {Object.values(row).map((val: any, vi) => (
-                                                                <td key={vi} className="pr-3 py-0.5 text-slate-700">
-                                                                    {String(val)}
-                                                                </td>
-                                                            ))}
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                            {msg.data.length > 5 && (
-                                                <p className="text-[10px] text-slate-400 mt-1">
-                                                    +{msg.data.length - 5} registros más
-                                                </p>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
+
                             </div>
                         </div>
                     ))}
@@ -202,23 +160,7 @@ export function AiAssistant() {
                     <div ref={bottomRef} />
                 </div>
 
-                {/* Suggestions (only show when few messages) */}
-                {messages.length <= 1 && (
-                    <div className="px-4 pb-2 flex flex-wrap gap-1.5">
-                        {suggestions.map((s, i) => (
-                            <button
-                                key={i}
-                                onClick={() => {
-                                    setInput(s);
-                                    inputRef.current?.focus();
-                                }}
-                                className="text-[10px] font-medium bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-600 rounded-full px-2.5 py-1 transition-colors border border-slate-200 hover:border-blue-200"
-                            >
-                                {s}
-                            </button>
-                        ))}
-                    </div>
-                )}
+
 
                 {/* Input */}
                 <div className="px-3 pb-3 pt-1">
