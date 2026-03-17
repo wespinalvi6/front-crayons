@@ -1070,9 +1070,9 @@ const CuotasDetalle = () => {
         <DialogContent className="max-w-[340px] p-0 overflow-hidden rounded-2xl border-none shadow-2xl z-[100]">
           <div className="flex flex-col items-center text-center p-8">
             <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${modalConfig.type === "success" ? "bg-emerald-50 text-emerald-500" :
-                modalConfig.type === "danger" ? "bg-rose-50 text-rose-500" :
-                  modalConfig.type === "warning" ? "bg-amber-50 text-amber-500" :
-                    "bg-blue-50 text-blue-500"
+              modalConfig.type === "danger" ? "bg-rose-50 text-rose-500" :
+                modalConfig.type === "warning" ? "bg-amber-50 text-amber-500" :
+                  "bg-blue-50 text-blue-500"
               }`}>
               {modalConfig.type === "success" && <CheckCircle2 size={32} />}
               {modalConfig.type === "danger" && <X size={32} />}
