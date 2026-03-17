@@ -66,9 +66,14 @@ export function AppSidebarTeacher({
   return (
     <Sidebar className="border-r border-slate-200 bg-white" {...props}>
       <SidebarHeader className="h-14 flex items-center px-5 border-b border-slate-100">
-        <span className="text-sm font-semibold text-slate-800 tracking-tight uppercase">
-          CRAYONS
-        </span>
+        <div className="flex flex-col gap-0.5 leading-none">
+          <img
+            src="https://res.cloudinary.com/dszdc6rh8/image/upload/v1747351782/image_1_vhjpzr.png"
+            alt="Logo Colegio Crayon's"
+            className="h-14 w-auto drop-shadow"
+            style={{ background: "transparent" }}
+          />
+        </div>
       </SidebarHeader>
 
       <SidebarContent className="px-3 py-4">

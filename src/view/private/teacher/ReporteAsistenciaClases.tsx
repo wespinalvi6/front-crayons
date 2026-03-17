@@ -111,7 +111,7 @@ export default function ReporteAsistenciaClases() {
                             Reporte Diario de Asistencia
                         </h1>
                         <p className="text-xs text-slate-500">
-                            {nombreGradoMap[gradoSeleccionado] || "Grado"} · {formatFechaDisplay(fecha)} · Sede Central
+                            {nombreGradoMap[gradoSeleccionado] || "Grado"} · {formatFechaDisplay(fecha)}
                         </p>
                     </div>
                 </div>
@@ -213,13 +213,13 @@ export default function ReporteAsistenciaClases() {
                             <tbody className="divide-y divide-slate-100">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={6} className="px-5 py-10 text-center text-slate-400">
+                                        <td colSpan={6} className="px-2 py-2 text-center text-slate-400">
                                             Procesando información del servidor...
                                         </td>
                                     </tr>
                                 ) : filteredReporte.length === 0 ? (
                                     <tr>
-                                        <td colSpan={6} className="px-5 py-10 text-center text-slate-900">
+                                        <td colSpan={6} className="px-2 py-2 text-center text-slate-900">
                                             No se encontraron registros para los filtros seleccionados
                                         </td>
                                     </tr>
@@ -240,10 +240,10 @@ export default function ReporteAsistenciaClases() {
                                                 transition={{ duration: 0.2 }}
                                                 className="border-b border-slate-100 hover:bg-slate-50 transition"
                                             >
-                                                <td className="px-5 py-3 text-slate-700 font-mono">
+                                                <td className="px-2 py-2 text-slate-700 font-mono">
                                                     {item.dni}
                                                 </td>
-                                                <td className="px-5 py-3">
+                                                <td className="px-2 py-2">
                                                     <div className="flex flex-col">
                                                         <span className="font-medium text-slate-900">
                                                             {item.nombre_alumno}
@@ -253,18 +253,18 @@ export default function ReporteAsistenciaClases() {
                                                         </span>
                                                     </div>
                                                 </td>
-                                                <td className="px-5 py-3 text-center">
+                                                <td className="px-2 py-2 text-center">
                                                     <span className={`px-2 py-0.5 text-[11px] rounded border ${getStatusStyle(entry.estado)}`}>
                                                         {entry.estado}
                                                     </span>
                                                 </td>
-                                                <td className="px-5 py-3 text-slate-700 text-center">
+                                                <td className="px-2 py-2 text-slate-700 text-center">
                                                     {entry.hora || <span className="text-slate-300">—</span>}
                                                 </td>
-                                                <td className="px-5 py-3 text-slate-700 text-center">
+                                                <td className="px-2 py-2 text-slate-700 text-center">
                                                     {logout.hora || <span className="text-slate-300">—</span>}
                                                 </td>
-                                                <td className="px-5 py-3 text-center">
+                                                <td className="px-2 py-2 text-center">
                                                     <span className="text-[11px] font-medium bg-slate-100 px-2 py-0.5 rounded">
                                                         {item.asistencias.length}
                                                     </span>

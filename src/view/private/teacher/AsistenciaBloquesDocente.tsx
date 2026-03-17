@@ -171,7 +171,7 @@ export default function AsistenciaBloquesDocente() {
           <div className="bg-white border rounded p-3 text-sm grid grid-cols-2 md:grid-cols-4 gap-2">
             <div>Presente: <b>{resumen.Presente || 0}</b></div>
             <div>Ausente: <b>{resumen.Ausente || 0}</b></div>
-            <div>Tardanza: <b>{resumen.Tardanza || 0}</b></div>
+            {/* <div>Tardanza: <b>{resumen.Tardanza || 0}</b></div> */}
             <div>Justificado: <b>{resumen.Justificado || 0}</b></div>
           </div>
         )}
@@ -183,12 +183,12 @@ export default function AsistenciaBloquesDocente() {
           </div>
 
           <div className="md:col-span-2">
-            <label className="text-xs text-slate-600 font-medium">Bloque / Horario <span className="text-red-500">*</span></label>
+            <label className="text-xs text-slate-600 font-medium">Curso / Grado <span className="text-red-500">*</span></label>
             <select className="w-full h-9 mt-1 border rounded px-2 text-sm" value={idHorario} onChange={(e) => setIdHorario(e.target.value)}>
-              <option value="">Seleccionar bloque</option>
+              <option value="">Seleccionar curso</option>
               {bloques.map((b) => (
                 <option key={b.id_horario} value={b.id_horario}>
-                  {`${b.curso} | ${b.grado} ${b.seccion || ""} | ${String(b.hora_inicio).slice(0, 5)}-${String(b.hora_fin).slice(0, 5)} | ${b.dia_semana}`}
+                  {`${b.curso} | ${b.grado} | ${String(b.hora_inicio).slice(0, 5)}-${String(b.hora_fin).slice(0, 5)} | ${b.dia_semana}`}
                 </option>
               ))}
             </select>

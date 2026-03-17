@@ -281,7 +281,7 @@ export default function HistorialAsistencia() {
                         animate={{ opacity: 1 }}
                         className="hover:bg-slate-50 transition-colors"
                       >
-                        <td className="px-5 py-3">
+                        <td className="px-2 py-1">
                           <div className="flex flex-col">
                             <span className="font-semibold text-slate-900">
                               {a.nombre} {a.ap_p}
@@ -291,8 +291,8 @@ export default function HistorialAsistencia() {
                             </span>
                           </div>
                         </td>
-                        <td className="px-5 py-3 text-center">
-                          <div className="flex flex-col items-center gap-1.5">
+                        <td className="px-2 py-1 text-center">
+                          <div className="flex items-center gap-1.5">
                             <span className={`px-2 py-0.5 text-[10px] font-medium rounded border ${a.estado === "Presente" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-rose-50 text-rose-600 border-rose-100"}`}>
                               {a.estado}
                             </span>
@@ -308,7 +308,7 @@ export default function HistorialAsistencia() {
                             )}
                           </div>
                         </td>
-                        <td className="px-5 py-3">
+                        <td className="px-2 py-1">
                           <div className="flex items-center justify-center gap-1.5 text-slate-500 font-medium text-[11px]">
                             <Clock size={12} className="text-amber-500" />
                             {a.hora_llegada || "--:--"}
