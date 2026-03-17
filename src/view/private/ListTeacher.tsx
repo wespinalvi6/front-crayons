@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Download, Loader2, ChevronDown, ChevronUp, UserX, UserCheck } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { AlertCircle, AlertTriangle, CheckCircle2, X } from "lucide-react";
 
 interface Curso {
   id_asignacion?: number;
@@ -50,6 +52,48 @@ export default function ListTeacher() {
   const [appliedAnio, setAppliedAnio] = useState<string>("");
   const [expandedDocente, setExpandedDocente] = useState<number | null>(null);
 
+  // Custom Modal State
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm?: () => void;
+    type: "info" | "success" | "danger" | "warning";
+    showCancel?: boolean;
+  }>({
+    isOpen: false,
+    title: "",
+    description: "",
+    type: "info",
+    showCancel: true
+  });
+
+  const showAlert = (title: string, description: string, type: "success" | "danger" | "warning" | "info" = "info") => {
+    setModalConfig({
+      isOpen: true,
+      title,
+      description,
+      confirmText: "Aceptar",
+      showCancel: false,
+      type
+    });
+  };
+
+  const showConfirm = (title: string, description: string, onConfirm: () => void, type: "info" | "success" | "danger" | "warning" = "info") => {
+    setModalConfig({
+      isOpen: true,
+      title,
+      description,
+      onConfirm,
+      confirmText: "Confirmar",
+      cancelText: "Cancelar",
+      showCancel: true,
+      type
+    });
+  };
+
   const { data: periodosData = EMPTY_ARRAY, isLoading: isLoadingAnios } = useQuery<any[]>({
     queryKey: ["periodosA_anios"],
     queryFn: async () => {
@@ -84,6 +128,8 @@ export default function ListTeacher() {
     enabled: !!appliedAnio,
   });
 
+  const queryClient = useQueryClient();
+
   const handleSearch = () => {
     setAppliedAnio(anioSeleccionado);
   };
@@ -102,40 +148,45 @@ export default function ListTeacher() {
       link.click();
       link.remove();
     } catch {
-      alert("Error al exportar los datos");
+      showAlert("Error", "No se pudieron exportar los datos en este momento.", "danger");
     }
   };
 
   const handleToggleEstado = async (id_docente: number, currentEstado: number) => {
     if (currentPeriodoActivo === 0) {
-      alert("No se pueden realizar cambios en un periodo inactivo.");
+      showAlert("Acción restringida", "No se pueden realizar cambios en un periodo académico inactivo.", "warning");
       return;
     }
 
-    try {
-      const token = localStorage.getItem("token");
-      const nuevoEstado = currentEstado === 1 ? 0 : 1;
-      const confirmMsg = nuevoEstado === 1
-        ? "¿Estás seguro de que deseas HABALITAR el acceso a este docente?"
-        : "¿Estás seguro de que deseas RETIRAR a este docente y quitar su acceso?";
+    const token = localStorage.getItem("token");
+    const nuevoEstado = currentEstado === 1 ? 0 : 1;
+    const confirmMsg = nuevoEstado === 1
+      ? "¿Estás seguro de que deseas HABALITAR el acceso a este docente?"
+      : "¿Estás seguro de que deseas RETIRAR a este docente y quitar su acceso?";
 
-      if (!window.confirm(confirmMsg)) return;
+    showConfirm(
+      nuevoEstado === 1 ? "Habilitar Docente" : "Retirar Docente",
+      confirmMsg,
+      async () => {
+        try {
+          const { data } = await axios.patch(
+            `https://api.colegiocrayons.com/api/docente/toggle-estado/${id_docente}`,
+            { activo: nuevoEstado },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
 
-      const { data } = await axios.patch(
-        `https://api.colegiocrayons.com/api/docente/toggle-estado/${id_docente}`,
-        { activo: nuevoEstado },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (data.success) {
-        // Recargar la lista
-        handleSearch();
-      } else {
-        alert(data.message || "Error al cambiar el estado");
-      }
-    } catch (error: any) {
-      alert(error.response?.data?.message || "Error al conectar con el servidor");
-    }
+          if (data.success) {
+            queryClient.invalidateQueries({ queryKey: ["docentesList"] });
+            showAlert("Éxito", `El docente ha sido ${nuevoEstado === 1 ? "habilitado" : "retirado"} correctamente.`, "success");
+          } else {
+            showAlert("Error", data.message || "No se pudo cambiar el estado del docente.", "danger");
+          }
+        } catch (error: any) {
+          showAlert("Error de Conexión", error.response?.data?.message || "No se pudo conectar con el servidor.", "danger");
+        }
+      },
+      nuevoEstado === 1 ? "success" : "danger"
+    );
   };
 
   if (isLoadingAnios || (!anioSeleccionado && anios.length > 0)) {
@@ -393,6 +444,51 @@ export default function ListTeacher() {
           </div>
         )}
       </div>
+
+      <Dialog open={modalConfig.isOpen} onOpenChange={(open) => setModalConfig(prev => ({ ...prev, isOpen: open }))}>
+        <DialogContent className="max-w-[340px] p-0 overflow-hidden rounded-2xl border-none shadow-2xl">
+          <div className="flex flex-col items-center text-center p-8">
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${modalConfig.type === "success" ? "bg-emerald-50 text-emerald-500" :
+              modalConfig.type === "danger" ? "bg-rose-50 text-rose-500" :
+                modalConfig.type === "warning" ? "bg-amber-50 text-amber-500" :
+                  "bg-blue-50 text-blue-500"
+              }`}>
+              {modalConfig.type === "success" && <CheckCircle2 size={32} />}
+              {modalConfig.type === "danger" && <X size={32} />}
+              {modalConfig.type === "warning" && <AlertTriangle size={32} />}
+              {modalConfig.type === "info" && <AlertCircle size={32} />}
+            </div>
+
+            <h3 className="text-lg font-bold text-slate-900 leading-tight mb-2">
+              {modalConfig.title}
+            </h3>
+            <p className="text-sm text-slate-500 font-medium leading-relaxed">
+              {modalConfig.description}
+            </p>
+          </div>
+
+          <div className="flex border-t border-slate-100 h-14">
+            {modalConfig.showCancel && (
+              <button
+                onClick={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
+                className="flex-1 text-sm font-bold text-slate-400 hover:bg-slate-50 transition-colors uppercase tracking-widest border-r border-slate-100"
+              >
+                {modalConfig.cancelText || "Cancelar"}
+              </button>
+            )}
+            <button
+              onClick={() => {
+                if (modalConfig.onConfirm) modalConfig.onConfirm();
+                setModalConfig(prev => ({ ...prev, isOpen: false }));
+              }}
+              className={`flex-1 text-sm font-bold hover:bg-slate-50 transition-colors uppercase tracking-widest ${modalConfig.type === "danger" ? "text-rose-600" : "text-blue-600"
+                }`}
+            >
+              {modalConfig.confirmText || "Aceptar"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

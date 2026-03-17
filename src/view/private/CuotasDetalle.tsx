@@ -1,7 +1,7 @@
 import { useState, useEffect, Fragment } from 'react';
 import api from "@/lib/axios";
 import axios from 'axios';
-import { Search, User, Calendar, CreditCard, ChevronDown, ChevronRight, FileDown, Printer, Banknote, Loader2 } from 'lucide-react';
+import { Search, User, Calendar, CreditCard, ChevronDown, ChevronRight, FileDown, Printer, Banknote, Loader2, AlertCircle, AlertTriangle, CheckCircle2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -104,6 +104,48 @@ const CuotasDetalle = () => {
   const [isDailyLoading, setIsDailyLoading] = useState(false);
   const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
   const [periods, setPeriods] = useState<AcademicPeriod[]>([]);
+
+  // Custom Modal State
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm?: () => void;
+    type: "info" | "success" | "danger" | "warning";
+    showCancel?: boolean;
+  }>({
+    isOpen: false,
+    title: "",
+    description: "",
+    type: "info",
+    showCancel: true
+  });
+
+  const showAlert = (title: string, description: string, type: "success" | "danger" | "warning" | "info" = "info") => {
+    setModalConfig({
+      isOpen: true,
+      title,
+      description,
+      confirmText: "Aceptar",
+      showCancel: false,
+      type
+    });
+  };
+
+  const showConfirm = (title: string, description: string, onConfirm: () => void, type: "info" | "success" | "danger" | "warning" = "info") => {
+    setModalConfig({
+      isOpen: true,
+      title,
+      description,
+      onConfirm,
+      confirmText: "Confirmar",
+      cancelText: "Cancelar",
+      showCancel: true,
+      type
+    });
+  };
 
   // Cargar datos al montar
   useEffect(() => {
@@ -208,13 +250,13 @@ const CuotasDetalle = () => {
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      alert('Error al generar la constancia de pago');
+      showAlert('Error', 'Error al generar la constancia de pago', 'danger');
     }
   };
 
   const buscarEstudiante = async () => {
     if (!dni.trim() || !año.trim()) {
-      alert('Por favor ingrese DNI y año');
+      showAlert('Atención', 'Por favor ingrese DNI y año', 'warning');
       return;
     }
 
@@ -228,17 +270,17 @@ const CuotasDetalle = () => {
         setDatosEstudiante(data);
       } else {
         setDatosEstudiante(null);
-        alert('No se encontró el estudiante con el DNI proporcionado');
+        showAlert('Estudiante no encontrado', 'No se encontró el estudiante con el DNI proporcionado', 'warning');
       }
     } catch (error) {
       setDatosEstudiante(null);
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 403) {
-          alert('Error de autorización. Inicie sesión nuevamente.');
+          showAlert('No Autorizado', 'Error de autorización. Inicie sesión nuevamente.', 'danger');
         } else if (error.response?.status === 404) {
-          alert('No se encontró el estudiante.');
+          showAlert('No Encontrado', 'No se encontró el estudiante.', 'warning');
         } else {
-          alert(`Error: ${error.response?.data?.message || error.message}`);
+          showAlert('Error', `Error: ${error.response?.data?.message || error.message}`, 'danger');
         }
       }
     } finally {
@@ -285,7 +327,7 @@ const CuotasDetalle = () => {
         });
       }
 
-      alert('Pago realizado con éxito');
+      showAlert('Éxito', 'Pago realizado con éxito', 'success');
       setShowPagoDialog(false);
       buscarEstudiante();
 
@@ -293,9 +335,9 @@ const CuotasDetalle = () => {
       setObservaciones('');
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data?.message) {
-        alert(`Error: ${error.response.data.message}`);
+        showAlert('Error', `Error: ${error.response.data.message}`, 'danger');
       } else {
-        alert('Error al procesar el pago');
+        showAlert('Error', 'Error al procesar el pago', 'danger');
       }
     } finally {
       setIsPagoLoading(false);
@@ -324,7 +366,7 @@ const CuotasDetalle = () => {
           presencial: false
         });
       }
-      alert('Matrícula pagada con éxito');
+      showAlert('Éxito', 'Matrícula pagada con éxito', 'success');
       setShowMatriculaDialog(false);
       buscarEstudiante();
 
@@ -332,9 +374,9 @@ const CuotasDetalle = () => {
       setObservaciones('');
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data?.message) {
-        alert(`Error: ${error.response.data.message}`);
+        showAlert('Error', `Error: ${error.response.data.message}`, 'danger');
       } else {
-        alert('Error al procesar el pago de matrícula');
+        showAlert('Error', 'Error al procesar el pago de matrícula', 'danger');
       }
     } finally {
       setIsMatriculaLoading(false);
@@ -1023,7 +1065,52 @@ const CuotasDetalle = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+
+      <Dialog open={modalConfig.isOpen} onOpenChange={(open) => setModalConfig(prev => ({ ...prev, isOpen: open }))}>
+        <DialogContent className="max-w-[340px] p-0 overflow-hidden rounded-2xl border-none shadow-2xl z-[100]">
+          <div className="flex flex-col items-center text-center p-8">
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${modalConfig.type === "success" ? "bg-emerald-50 text-emerald-500" :
+                modalConfig.type === "danger" ? "bg-rose-50 text-rose-500" :
+                  modalConfig.type === "warning" ? "bg-amber-50 text-amber-500" :
+                    "bg-blue-50 text-blue-500"
+              }`}>
+              {modalConfig.type === "success" && <CheckCircle2 size={32} />}
+              {modalConfig.type === "danger" && <X size={32} />}
+              {modalConfig.type === "warning" && <AlertTriangle size={32} />}
+              {modalConfig.type === "info" && <AlertCircle size={32} />}
+            </div>
+
+            <h3 className="text-lg font-bold text-slate-900 leading-tight mb-2">
+              {modalConfig.title}
+            </h3>
+            <p className="text-sm text-slate-500 font-medium leading-relaxed">
+              {modalConfig.description}
+            </p>
+          </div>
+
+          <div className="flex border-t border-slate-100 h-14">
+            {modalConfig.showCancel && (
+              <button
+                onClick={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
+                className="flex-1 text-sm font-bold text-slate-400 hover:bg-slate-50 transition-colors uppercase tracking-widest border-r border-slate-100"
+              >
+                {modalConfig.cancelText || "Cancelar"}
+              </button>
+            )}
+            <button
+              onClick={() => {
+                if (modalConfig.onConfirm) modalConfig.onConfirm();
+                setModalConfig(prev => ({ ...prev, isOpen: false }));
+              }}
+              className={`flex-1 text-sm font-bold hover:bg-slate-50 transition-colors uppercase tracking-widest ${modalConfig.type === "danger" ? "text-rose-600" : "text-blue-600"
+                }`}
+            >
+              {modalConfig.confirmText || "Aceptar"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div >
   );
 };
 

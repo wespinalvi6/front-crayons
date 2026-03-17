@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Trash2, Plus, Loader2 } from "lucide-react";
+import { Edit, Trash2, Plus, Loader2, AlertCircle, AlertTriangle, CheckCircle2, X } from "lucide-react";
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -38,10 +38,10 @@ interface FeeSchedule {
   anio: number;
   fecha_inicio: string;
   fecha_fin: string;
-  costo_matricula: string | number; // API returns string, we might want to handle both
+  costo_matricula: string | number;
   costo_cuota_mensual: string | number;
   numero_cuotas: number;
-  activo: number; // 0 or 1
+  activo: number;
   created_at?: string;
   updated_at?: string;
 }
@@ -74,6 +74,27 @@ export default function CuotasProgramar() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState<FeeFormData>(initialFormData);
+
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm?: () => void;
+    type: "info" | "success" | "danger" | "warning";
+    showCancel?: boolean;
+  }>({
+    isOpen: false, title: "", description: "", type: "info", showCancel: false
+  });
+
+  const showAlert = (title: string, description: string, type: "success" | "danger" | "warning" | "info" = "info") => {
+    setModalConfig({ isOpen: true, title, description, confirmText: "Aceptar", showCancel: false, type });
+  };
+
+  const showConfirm = (title: string, description: string, onConfirm: () => void, type: "info" | "success" | "danger" | "warning" = "danger") => {
+    setModalConfig({ isOpen: true, title, description, onConfirm, confirmText: "Confirmar", cancelText: "Cancelar", showCancel: true, type });
+  };
 
   // Fetch fees using React Query
   const { data: fees = EMPTY_ARRAY } = useQuery<FeeSchedule[]>({
@@ -137,17 +158,21 @@ export default function CuotasProgramar() {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm("¿Estás seguro de eliminar este periodo?")) {
-      try {
-        const response = await axios.delete(`https://api.colegiocrayons.com/api/cuotas/eliminar-periodo/${id}`);
-        if (response.data.success) {
-          alert("Periodo eliminado correctamente");
-          queryClient.invalidateQueries({ queryKey: ['periodosCuotas'] });
+    showConfirm(
+      "Eliminar Periodo",
+      "¿Estás seguro de que deseas eliminar este periodo académico? Esta acción no se puede deshacer.",
+      async () => {
+        try {
+          const response = await axios.delete(`https://api.colegiocrayons.com/api/cuotas/eliminar-periodo/${id}`);
+          if (response.data.success) {
+            showAlert("Eliminado", "El periodo fue eliminado correctamente.", "success");
+            queryClient.invalidateQueries({ queryKey: ['periodosCuotas'] });
+          }
+        } catch (error) {
+          showAlert("Error", "No se pudo eliminar el periodo.", "danger");
         }
-      } catch (error) {
-        alert("Error al eliminar el periodo");
       }
-    }
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -163,20 +188,19 @@ export default function CuotasProgramar() {
       if (editingId) {
         const response = await axios.put(`https://api.colegiocrayons.com/api/cuotas/actualizar-periodo/${editingId}`, payload);
         if (response.data.success) {
-          alert("Periodo actualizado correctamente");
+          showAlert("Actualizado", "El periodo fue actualizado correctamente.", "success");
           queryClient.invalidateQueries({ queryKey: ['periodosCuotas'] });
         }
       } else {
-        // Create Logic
         const response = await axios.post('https://api.colegiocrayons.com/api/cuotas/agregar-periodo', payload);
         if (response.status === 200 || response.status === 201) {
-          alert("Creado correctamente");
+          showAlert("Éxito", "El periodo fue creado correctamente.", "success");
           queryClient.invalidateQueries({ queryKey: ['periodosCuotas'] });
         }
       }
       setIsDialogOpen(false);
     } catch (error) {
-      alert("Error al guardar");
+      showAlert("Error", "No se pudo guardar el periodo. Intente nuevamente.", "danger");
     } finally {
       setLoading(false);
     }
@@ -380,6 +404,45 @@ export default function CuotasProgramar() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={modalConfig.isOpen} onOpenChange={(open) => setModalConfig(prev => ({ ...prev, isOpen: open }))}>
+        <DialogContent className="max-w-[340px] p-0 overflow-hidden rounded-2xl border-none shadow-2xl">
+          <div className="flex flex-col items-center text-center p-8">
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${modalConfig.type === "success" ? "bg-emerald-50 text-emerald-500" :
+              modalConfig.type === "danger" ? "bg-rose-50 text-rose-500" :
+                modalConfig.type === "warning" ? "bg-amber-50 text-amber-500" :
+                  "bg-blue-50 text-blue-500"
+              }`}>
+              {modalConfig.type === "success" && <CheckCircle2 size={32} />}
+              {modalConfig.type === "danger" && <X size={32} />}
+              {modalConfig.type === "warning" && <AlertTriangle size={32} />}
+              {modalConfig.type === "info" && <AlertCircle size={32} />}
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 leading-tight mb-2">{modalConfig.title}</h3>
+            <p className="text-sm text-slate-500 font-medium leading-relaxed">{modalConfig.description}</p>
+          </div>
+          <div className="flex border-t border-slate-100 h-14">
+            {modalConfig.showCancel && (
+              <button
+                onClick={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
+                className="flex-1 text-sm font-bold text-slate-400 hover:bg-slate-50 transition-colors uppercase tracking-widest border-r border-slate-100"
+              >
+                {modalConfig.cancelText || "Cancelar"}
+              </button>
+            )}
+            <button
+              onClick={() => {
+                if (modalConfig.onConfirm) modalConfig.onConfirm();
+                setModalConfig(prev => ({ ...prev, isOpen: false }));
+              }}
+              className={`flex-1 text-sm font-bold hover:bg-slate-50 transition-colors uppercase tracking-widest ${modalConfig.type === "danger" ? "text-rose-600" : "text-blue-600"
+                }`}
+            >
+              {modalConfig.confirmText || "Aceptar"}
+            </button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

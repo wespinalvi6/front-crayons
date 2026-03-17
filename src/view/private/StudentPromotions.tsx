@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import api from "@/lib/axios";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { CheckCircle2, AlertTriangle, X, AlertCircle } from "lucide-react";
 
 const estadoBadge = (estado: string) => {
   if (estado?.toLowerCase() === "activo") return { label: "Activo", bg: "#e8f5e9", color: "#2e7d32" };
@@ -57,6 +59,14 @@ export default function PromocionAlumnos() {
   const [nombreGradoActual, setNombreGradoActual] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [idIndividual, setIdIndividual] = useState<number | null>(null);
+
+  const [alertModal, setAlertModal] = useState<{ isOpen: boolean; title: string; description: string; type: "success" | "danger" | "warning" | "info" }>({
+    isOpen: false, title: "", description: "", type: "info"
+  });
+
+  const showAlert = (title: string, description: string, type: "success" | "danger" | "warning" | "info" = "info") => {
+    setAlertModal({ isOpen: true, title, description, type });
+  };
 
   // Cargar Catálogos (Grados y Periodos)
   useEffect(() => {
@@ -162,7 +172,7 @@ export default function PromocionAlumnos() {
 
   const ejecutarPromocionIndividual = async (idMatricula: number) => {
     if (!periodoSiguiente && !esUltimoGrado) {
-      alert("No se ha definido un periodo siguiente para la promoción.");
+      showAlert("Configuración incompleta", "No se ha definido un periodo siguiente para la promoción.", "warning");
       return;
     }
     setLoading(true);
@@ -196,7 +206,7 @@ export default function PromocionAlumnos() {
 
   const ejecutarProcesarMasivo = async () => {
     if (!periodoActual || (!periodoSiguiente && !esUltimoGrado)) {
-      alert("No se han definido periodos para procesar promociones o repeticiones.");
+      showAlert("Configuración incompleta", "No se han definido periodos para procesar promociones o repeticiones.", "warning");
       return;
     }
     setLoading(true);
@@ -702,7 +712,7 @@ export default function PromocionAlumnos() {
                     } else if (seleccionados.length > 1) {
                       // Si el API de masivo no soporta lista de IDs, podríamos tener que iterar.
                       // Pero el usuario proporcionó endpoints específicos.
-                      alert("La promoción de múltiples seleccionados se procesará individualmente.");
+                      showAlert("Proceso en marcha", "La promoción de múltiples alumnos seleccionados se procesará individualmente.", "info");
                       Promise.all(seleccionados.map(id => ejecutarPromocionIndividual(id))).then(() => setConfirmando(null));
                     }
                   }
@@ -719,6 +729,34 @@ export default function PromocionAlumnos() {
           </div>
         </div>
       )}
+
+      <Dialog open={alertModal.isOpen} onOpenChange={(open) => setAlertModal(prev => ({ ...prev, isOpen: open }))}>
+        <DialogContent className="max-w-[340px] p-0 overflow-hidden rounded-2xl border-none shadow-2xl">
+          <div className="flex flex-col items-center text-center p-8">
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${alertModal.type === "success" ? "bg-emerald-50 text-emerald-500" :
+                alertModal.type === "danger" ? "bg-rose-50 text-rose-500" :
+                  alertModal.type === "warning" ? "bg-amber-50 text-amber-500" :
+                    "bg-blue-50 text-blue-500"
+              }`}>
+              {alertModal.type === "success" && <CheckCircle2 size={32} />}
+              {alertModal.type === "danger" && <X size={32} />}
+              {alertModal.type === "warning" && <AlertTriangle size={32} />}
+              {alertModal.type === "info" && <AlertCircle size={32} />}
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 leading-tight mb-2">{alertModal.title}</h3>
+            <p className="text-sm text-slate-500 font-medium leading-relaxed">{alertModal.description}</p>
+          </div>
+          <div className="flex border-t border-slate-100 h-14">
+            <button
+              onClick={() => setAlertModal(prev => ({ ...prev, isOpen: false }))}
+              className={`flex-1 text-sm font-bold hover:bg-slate-50 transition-colors uppercase tracking-widest ${alertModal.type === "danger" ? "text-rose-600" : "text-blue-600"
+                }`}
+            >
+              Aceptar
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
