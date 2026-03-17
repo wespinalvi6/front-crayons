@@ -15,6 +15,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 
+interface AsistenciaBloque {
+  estado: string;
+  observacion: string | null;
+  hora_inicio: string;
+  hora_fin: string;
+}
+
 interface Asistencia {
   id: number;
   id_alumno: number;
@@ -28,6 +35,7 @@ interface Asistencia {
   nombre: string;
   ap_p: string;
   ap_m: string;
+  detalles_bloque?: AsistenciaBloque[];
 }
 
 interface Asignacion {
@@ -111,11 +119,13 @@ export default function HistorialAsistencia() {
     }
   };
 
-  useEffect(() => {
-    if (fecha || grado || curso) {
-      handleBuscar();
-    }
-  }, [handleBuscar]);
+  // Auto-fetch removido a petición del usuario. 
+  // Ahora los datos solo se muestran al pulsar el botón "Consultar".
+  // useEffect(() => {
+  //   if (fecha || grado || curso) {
+  //     handleBuscar();
+  //   }
+  // }, [handleBuscar]);
 
   const stats = {
     total: asistencias.length,
@@ -259,7 +269,7 @@ export default function HistorialAsistencia() {
                     </tr>
                   ) : asistencias.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="px-5 py-12 text-center text-slate-300 font-medium bg-white uppercase tracking-widest text-[10px]">
+                      <td colSpan={4} className="px-5 py-12 text-center text-slate-900 font-medium bg-white uppercase tracking-widest text-[10px]">
                         {error || "Sin resultados para mostrar"}
                       </td>
                     </tr>
@@ -282,9 +292,21 @@ export default function HistorialAsistencia() {
                           </div>
                         </td>
                         <td className="px-5 py-3 text-center">
-                          <span className={`px-2 py-0.5 text-[10px] font-medium rounded border ${a.estado === "Presente" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-rose-50 text-rose-600 border-rose-100"}`}>
-                            {a.estado}
-                          </span>
+                          <div className="flex flex-col items-center gap-1.5">
+                            <span className={`px-2 py-0.5 text-[10px] font-medium rounded border ${a.estado === "Presente" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-rose-50 text-rose-600 border-rose-100"}`}>
+                              {a.estado}
+                            </span>
+                            {a.detalles_bloque && a.detalles_bloque.length > 0 && (
+                              <div className="flex flex-wrap justify-center gap-1">
+                                {a.detalles_bloque.map((bloque, idx) => (
+                                  <div key={idx} title={`Estado: ${bloque.estado} | Obs: ${bloque.observacion || "Ninguna"}`} className="flex gap-1 items-center px-1.5 py-0.5 bg-white border border-slate-200 rounded shadow-sm text-[9px] text-slate-500 cursor-help transition-colors hover:border-blue-300">
+                                    <span className={`w-1.5 h-1.5 rounded-full ${bloque.estado === 'Presente' ? 'bg-emerald-500' : bloque.estado === 'Tardanza' ? 'bg-amber-500' : bloque.estado === 'Ausente' ? 'bg-rose-500' : 'bg-blue-500'}`} />
+                                    <span>{bloque.hora_inicio}-{bloque.hora_fin}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </td>
                         <td className="px-5 py-3">
                           <div className="flex items-center justify-center gap-1.5 text-slate-500 font-medium text-[11px]">

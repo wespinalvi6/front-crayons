@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import api from "@/lib/axios";
 import {
     Download,
@@ -59,9 +59,9 @@ export default function ReporteAsistenciaClases() {
         }
     }, [fecha, gradoSeleccionado]);
 
-    useEffect(() => {
-        fetchReporte();
-    }, [fetchReporte]);
+    // useEffect(() => {
+    //     fetchReporte();
+    // }, [fetchReporte]);
 
     const filteredReporte = reporte.filter(r =>
         r.nombre_alumno.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -167,6 +167,14 @@ export default function ReporteAsistenciaClases() {
                             onChange={(e) => setFecha(e.target.value)}
                             className="h-8 w-40 text-xs rounded-md bg-white border-slate-200"
                         />
+                        <Button
+                            onClick={fetchReporte}
+                            disabled={loading}
+                            variant="outline"
+                            className="h-8 px-4 rounded-md text-xs border-slate-200 hover:bg-slate-50"
+                        >
+                            {loading ? "..." : <><Search size={14} className="mr-2" /> Consultar</>}
+                        </Button>
                     </div>
 
                     <div className="relative w-64">
@@ -211,7 +219,7 @@ export default function ReporteAsistenciaClases() {
                                     </tr>
                                 ) : filteredReporte.length === 0 ? (
                                     <tr>
-                                        <td colSpan={6} className="px-5 py-10 text-center text-slate-400">
+                                        <td colSpan={6} className="px-5 py-10 text-center text-slate-900">
                                             No se encontraron registros para los filtros seleccionados
                                         </td>
                                     </tr>

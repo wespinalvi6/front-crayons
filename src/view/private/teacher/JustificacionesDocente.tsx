@@ -1,11 +1,11 @@
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import api from "@/lib/axios";
 import {
   Calendar,
   CheckCircle,
   XCircle,
   ExternalLink,
-  Filter
+  Search
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -90,9 +90,10 @@ export default function JustificacionesDocente() {
     }
   }, [fechaInput, activeTab, estadoFiltro]);
 
-  useEffect(() => {
-    fetchJustificaciones();
-  }, [fetchJustificaciones]);
+  // Auto-fetch retirado a petición
+  // useEffect(() => {
+  //   fetchJustificaciones();
+  // }, [fetchJustificaciones]);
 
   const handleAccion = (j: Justificacion, accion: "aceptar" | "rechazar") => {
     setJustificacionSeleccionada(j);
@@ -200,9 +201,9 @@ export default function JustificacionesDocente() {
           <Button
             onClick={fetchJustificaciones}
             disabled={loading}
-            className="h-8 px-6 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-none border-none transition-all active:scale-95 uppercase tracking-wider"
+            className="h-8 px-6 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-none border-none transition-all active:scale-95 uppercase tracking-wider"
           >
-            {loading ? "..." : <><Filter size={14} className="mr-2" /> Filtrar Registros</>}
+            {loading ? "..." : <><Search size={14} className="mr-2" /> Consultar</>}
           </Button>
         </div>
 
@@ -232,7 +233,7 @@ export default function JustificacionesDocente() {
                     </tr>
                   ) : justificaciones.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-5 py-16 text-center text-slate-300 font-medium bg-white uppercase tracking-widest text-[10px]">
+                      <td colSpan={5} className="px-5 py-16 text-center text-slate-900 font-medium bg-white uppercase tracking-widest text-[10px]">
                         Cero solicitudes pendientes para este día
                       </td>
                     </tr>

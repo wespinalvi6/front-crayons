@@ -18,7 +18,7 @@ interface Asignacion {
     curso: string;
     grado: string;
     anio: number;
-    alumnos: { id_alumno: number }[];
+    alumnos: { id_alumno: number; dni?: string; nombre_completo?: string; id_matricula?: number }[];
 }
 
 export default function TeacherHome() {
@@ -43,7 +43,18 @@ export default function TeacherHome() {
         fetchData();
     }, []);
 
-    const totalAlumnos = asignaciones.reduce((sum, a) => sum + (a.alumnos?.length || 0), 0);
+    const uniqueStudents = new Set<string>();
+    asignaciones.forEach(a => {
+        if (a.alumnos) {
+            a.alumnos.forEach((alumno: any) => {
+                if (alumno.dni) uniqueStudents.add(`dni_${alumno.dni}`);
+                else if (alumno.id_matricula) uniqueStudents.add(`mat_${alumno.id_matricula}`);
+                else if (alumno.nombre_completo) uniqueStudents.add(`nom_${alumno.nombre_completo}`);
+                else uniqueStudents.add(`id_${alumno.id_alumno}`);
+            });
+        }
+    });
+    const totalAlumnos = uniqueStudents.size;
     const today = new Date().toLocaleDateString("es-PE", {
         weekday: "long",
         day: "numeric",
