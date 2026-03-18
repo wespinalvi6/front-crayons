@@ -213,7 +213,7 @@ export default function RegisterStudent() {
       const formDataPdf = new FormData();
       formDataPdf.append('file', file);
 
-      const response = await fetch('https://n8n-production-1089.up.railway.app/webhook/upload-pdf', {
+      const response = await fetch('https://api.colegiocrayons.com/api/ocr/extraer-n8n', {
         method: 'POST',
         body: formDataPdf,
       });
