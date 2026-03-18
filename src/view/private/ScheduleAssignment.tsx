@@ -522,7 +522,7 @@ export default function ScheduleAssignment() {
 
             <div style={{ padding: "8px 0", borderTop: "1px solid #f1f5f9", marginBottom: 12 }}>
               <p style={{ margin: 0, fontSize: "12px", color: "#94a3b8", display: "flex", alignItems: "center", gap: 8 }}>
-                <Check className="w-3.5 h-3.5" /> {pickState ? "Suelte para confirmar" : "1er clic = hora inicio · 2do clic = hora fin · Cada cuadro = 30 min"}
+                <Check className="w-3.5 h-3.5" /> {pickState ? "Suelte para confirmar" : ""}
               </p>
             </div>
 
