@@ -1,14 +1,75 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 import { User, Lock, Eye, EyeOff, Loader2, ArrowRight } from "lucide-react";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+
+// Constantes para rate limiting
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 5 * 60 * 1000; // 5 minutos
 
 export default function Login() {
   const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  // Rate limiting state
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [isLocked, setIsLocked] = useState(false);
+  const [lockoutTime, setLockoutTime] = useState<number | null>(null);
+  const [remainingTime, setRemainingTime] = useState(0);
+
+  // Cargar intentos desde localStorage al montar
+  useEffect(() => {
+    const storedAttempts = localStorage.getItem("loginAttempts");
+    const storedLockoutTime = localStorage.getItem("lockoutTime");
+
+    if (storedAttempts) {
+      setLoginAttempts(parseInt(storedAttempts, 10));
+    }
+
+    if (storedLockoutTime) {
+      const lockoutEnd = parseInt(storedLockoutTime, 10);
+      const now = Date.now();
+
+      if (now < lockoutEnd) {
+        setIsLocked(true);
+        setLockoutTime(lockoutEnd);
+        setRemainingTime(Math.ceil((lockoutEnd - now) / 1000));
+      } else {
+        // Limpiar bloqueo expirado
+        localStorage.removeItem("loginAttempts");
+        localStorage.removeItem("lockoutTime");
+      }
+    }
+  }, []);
+
+  // Timer para cuenta regresiva
+  useEffect(() => {
+    if (isLocked && lockoutTime) {
+      const interval = setInterval(() => {
+        const now = Date.now();
+        const remaining = Math.ceil((lockoutTime - now) / 1000);
+
+        if (remaining <= 0) {
+          setIsLocked(false);
+          setLoginAttempts(0);
+          setLockoutTime(null);
+          setRemainingTime(0);
+          localStorage.removeItem("loginAttempts");
+          localStorage.removeItem("lockoutTime");
+          clearInterval(interval);
+        } else {
+          setRemainingTime(remaining);
+        }
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
+  }, [isLocked, lockoutTime]);
 
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -20,16 +81,29 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    // Verificar si está bloqueado
+    if (isLocked) {
+      const minutes = Math.ceil(remainingTime / 60);
+      setError(`Cuenta bloqueada. Intente nuevamente en ${minutes} minuto(s).`);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       const response = await axios.post(
-        "https://api.colegiocrayons.com/api/auth/login",
+        `${API_URL}/auth/login`,
         form,
         {
           headers: { "Content-Type": "application/json" },
         }
       );
+
+      // Reset de intentos exitosos
+      setLoginAttempts(0);
+      localStorage.removeItem("loginAttempts");
+      localStorage.removeItem("lockoutTime");
 
       const token = response.data.token || response.data.data?.token;
       let roleId =
@@ -40,7 +114,7 @@ export default function Login() {
         (response.data.user && response.data.user.roleId);
 
       if (!token) {
-        setError("Error: El servidor no devolvió un token de acceso.");
+        setError("Error al iniciar sesión. Por favor, intente nuevamente.");
         setIsLoading(false);
         return;
       }
@@ -54,43 +128,72 @@ export default function Login() {
         navigate("/");
       }
     } catch (error: unknown) {
-      if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as {
-          response: {
-            status: number;
-            data: {
-              message?: string;
-              change_password_required?: boolean;
-              cambiar_password?: boolean;
-              token?: string;
-              roleId?: number;
-              data?: { token?: string; roleId?: number }
-            }
-          }
-        };
-        const { status, data } = axiosError.response;
+      // Incrementar intentos fallidos
+      const newAttempts = loginAttempts + 1;
+      setLoginAttempts(newAttempts);
+      localStorage.setItem("loginAttempts", newAttempts.toString());
 
-        // Check if password change is required (by flag or message)
-        const requiresPasswordChange =
-          data.cambiar_password ||
-          data.change_password_required ||
-          (data.message && data.message.toLowerCase().includes('debe cambiar su contraseña'));
-
-        if ((status === 403 || status === 401) && requiresPasswordChange) {
-          const tempToken = data.token || data.data?.token;
-          const tempRoleId = data.roleId || data.data?.roleId;
-
-          if (tempToken) {
-            // Guardamos el token para que la página de cambio de contraseña lo use
-            login(tempToken, tempRoleId || null);
-          }
-          // Redirect immediately without showing error
-          navigate("/change-password");
-          return;
-        }
-        setError(data.message || "Credenciales incorrectas (400)");
+      // Verificar si se debe bloquear
+      if (newAttempts >= MAX_LOGIN_ATTEMPTS) {
+        const lockoutEnd = Date.now() + LOCKOUT_DURATION_MS;
+        setIsLocked(true);
+        setLockoutTime(lockoutEnd);
+        localStorage.setItem("lockoutTime", lockoutEnd.toString());
+        setError(`Demasiados intentos fallidos. Cuenta bloqueada por 5 minutos.`);
       } else {
-        setError("Error de conexión con el servidor");
+        const remaining = MAX_LOGIN_ATTEMPTS - newAttempts;
+
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as {
+            response: {
+              status: number;
+              data: {
+                message?: string;
+                change_password_required?: boolean;
+                cambiar_password?: boolean;
+                token?: string;
+                roleId?: number;
+                data?: { token?: string; roleId?: number }
+              }
+            }
+          };
+          const { status, data } = axiosError.response;
+
+          // Check if password change is required (by flag or message)
+          const requiresPasswordChange =
+            data.cambiar_password ||
+            data.change_password_required ||
+            (data.message && data.message.toLowerCase().includes('debe cambiar su contraseña'));
+
+          if ((status === 403 || status === 401) && requiresPasswordChange) {
+            const tempToken = data.token || data.data?.token;
+            const tempRoleId = data.roleId || data.data?.roleId;
+
+            if (tempToken) {
+              // Guardamos el token para que la página de cambio de contraseña lo use
+              login(tempToken, tempRoleId || null);
+            }
+            // Reset de intentos al requerir cambio de contraseña
+            setLoginAttempts(0);
+            localStorage.removeItem("loginAttempts");
+            // Redirect immediately without showing error
+            navigate("/change-password");
+            return;
+          }
+
+          // Mensaje de error sanitizado
+          if (status === 401) {
+            setError(`Usuario o contraseña incorrectos. ${remaining} intento(s) restante(s).`);
+          } else if (status === 403) {
+            setError("Acceso denegado. Contacte al administrador.");
+          } else if (status >= 500) {
+            setError("Error del servidor. Por favor, intente más tarde.");
+          } else {
+            setError(`Error de autenticación. ${remaining} intento(s) restante(s).`);
+          }
+        } else {
+          setError("Error de conexión. Verifique su conexión a internet.");
+        }
       }
     } finally {
       setIsLoading(false);

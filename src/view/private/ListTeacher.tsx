@@ -5,6 +5,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { AlertCircle, AlertTriangle, CheckCircle2, X } from "lucide-react";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+
 interface Curso {
   id_asignacion?: number;
   curso: string;
@@ -97,7 +99,7 @@ export default function ListTeacher() {
   const { data: periodosData = EMPTY_ARRAY, isLoading: isLoadingAnios } = useQuery<any[]>({
     queryKey: ["periodosA_anios"],
     queryFn: async () => {
-      const periodsRes = await axios.get("https://api.colegiocrayons.com/api/cuotas/periodos");
+      const periodsRes = await axios.get(`${API_URL}/cuotas/periodos`);
       const data = periodsRes.data;
       if (data && data.success) {
         return data.data; // Array of { id, anio, activo, ... }
@@ -121,7 +123,7 @@ export default function ListTeacher() {
     queryFn: async () => {
       if (!appliedAnio) return [];
       const { data } = await axios.get<ApiResponse>(
-        `https://api.colegiocrayons.com/api/docente/lista-docentes/${appliedAnio}`
+        `${API_URL}/docente/lista-docentes/${appliedAnio}`
       );
       return data.success ? data.data : [];
     },
@@ -137,7 +139,7 @@ export default function ListTeacher() {
   const handleExportar = async () => {
     try {
       const response = await axios.get(
-        `https://api.colegiocrayons.com/api/docente/exportar/${anioSeleccionado}`,
+        `${API_URL}/docente/exportar/${anioSeleccionado}`,
         { responseType: "blob", params: { orden: "desc" } }
       );
       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -170,7 +172,7 @@ export default function ListTeacher() {
       async () => {
         try {
           const { data } = await axios.patch(
-            `https://api.colegiocrayons.com/api/docente/toggle-estado/${id_docente}`,
+            `${API_URL}/docente/toggle-estado/${id_docente}`,
             { activo: nuevoEstado },
             { headers: { Authorization: `Bearer ${token}` } }
           );

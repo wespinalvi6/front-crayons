@@ -1,20 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "@/lib/axios";
-import { CalendarDays, Filter, Loader2, Clock, ChevronDown } from "lucide-react";
+import { CalendarDays, Filter, Loader2 } from "lucide-react";
+
+// --- TIPOS DE DATOS ---
+type Teacher = { id: string; name: string };
+type Subject = { id: string; name: string; bgColor: string; textColor: string };
 
 type PeriodoItem = { id: number; anio: number; activo: number };
 type DocenteItem = { id: number; nombre_completo: string };
 type GradoItem = { id: number; nombre: string };
+type SeccionItem = { id: number; nombre: string };
 type CursoItem = { id: number; nombre: string };
-type AsignacionDocente = {
-  id_asignacion: number;
-  id_curso: number;
-  curso: string;
-  id_grado: number;
-  grado: string;
-  id_seccion: number | null;
-  seccion: string | null;
-};
 
 type ReporteRow = {
   id_periodo: number;
@@ -35,210 +31,65 @@ type ReporteRow = {
   aula: string | null;
 };
 
-type Grupo = {
-  key: string;
-  docente: string;
-  grado: string;
-  curso: string;
-  seccion: string;
-  anio: number;
-  bloques: ReporteRow[];
-};
+// Paleta de colores para cursos
+const COLORS = [
+  { bg: "bg-blue-400", text: "text-black", border: "border-blue-500" },
+  { bg: "bg-green-600", text: "text-white", border: "border-green-700" },
+  { bg: "bg-emerald-500", text: "text-white", border: "border-emerald-600" },
+  { bg: "bg-yellow-300", text: "text-black", border: "border-yellow-500" },
+  { bg: "bg-purple-600", text: "text-white", border: "border-purple-800" },
+  { bg: "bg-red-600", text: "text-white", border: "border-red-800" },
+  { bg: "bg-orange-200", text: "text-orange-900", border: "border-orange-400" },
+  { bg: "bg-pink-300", text: "text-black", border: "border-pink-500" },
+  { bg: "bg-teal-400", text: "text-black", border: "border-teal-600" },
+  { bg: "bg-indigo-400", text: "text-white", border: "border-indigo-600" },
+  { bg: "bg-cyan-600", text: "text-white", border: "border-cyan-800" },
+  { bg: "bg-lime-400", text: "text-black", border: "border-lime-600" },
+];
 
-const DIA_ORDEN: Record<string, number> = {
-  Lunes: 1, Martes: 2, Miercoles: 3, Jueves: 4, Viernes: 5, Sabado: 6, Domingo: 7,
-};
-
-const DIA_COLORS: Record<string, { bg: string; color: string }> = {
-  Lunes: { bg: "#dbeafe", color: "#1d4ed8" },
-  Martes: { bg: "#dcfce7", color: "#15803d" },
-  Miercoles: { bg: "#fef9c3", color: "#a16207" },
-  Jueves: { bg: "#ede9fe", color: "#6d28d9" },
-  Viernes: { bg: "#ffedd5", color: "#c2410c" },
-  Sabado: { bg: "#fce7f3", color: "#9d174d" },
-  Domingo: { bg: "#f1f5f9", color: "#475569" },
-};
-
-function normalizeHora(raw: string) {
-  if (!raw) return "";
-  return raw.slice(0, 5);
+function getSubjectColor(id: number) {
+  const c = COLORS[id % COLORS.length];
+  return { bgColor: c.bg, textColor: c.text, borderColor: c.border };
 }
 
-function getInitials(name: string) {
-  return name.split(" ").slice(0, 2).map((n) => n[0]).join("").toUpperCase();
+const DIAS = ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes"];
+const DIAS_SHORT = ["LU", "MA", "MI", "JU", "VI"];
+
+// Generar horas en intervalos de 15 min (7:00 a 17:00)
+const HORAS: string[] = [];
+for (let h = 7; h < 17; h++) {
+  HORAS.push(`${String(h).padStart(2, "0")}:00`);
+  HORAS.push(`${String(h).padStart(2, "0")}:15`);
+  HORAS.push(`${String(h).padStart(2, "0")}:30`);
+  HORAS.push(`${String(h).padStart(2, "0")}:45`);
 }
 
-// ─── Fila expandible por asignación ────────────────────────────────────────
-function GrupoRow({ g, index }: { g: Grupo; index: number }) {
-  const [open, setOpen] = useState(false);
-  const initials = getInitials(g.docente);
+const PX_PER_SLOT = 22;
+const START_MIN = 7 * 60; // 07:00
 
-  return (
-    <div
-      style={{
-        border: "1px solid",
-        borderColor: open ? "#bfdbfe" : "#e2e4e9",
-        borderRadius: 7,
-        overflow: "hidden",
-        transition: "border-color 0.15s",
-        background: "#fff",
-      }}
-    >
-      {/* Fila compacta — siempre visible */}
-      <button
-        onClick={() => setOpen((v) => !v)}
-        style={{
-          width: "100%",
-          background: open ? "#f0f6ff" : "#fff",
-          border: "none",
-          cursor: "pointer",
-          padding: "11px 14px",
-          display: "grid",
-          gridTemplateColumns: "28px 36px 1fr 90px 90px 70px 28px",
-          alignItems: "center",
-          gap: 10,
-          textAlign: "left",
-          transition: "background 0.12s",
-        }}
-      >
-        {/* Número */}
-        <span style={{ fontSize: 11, color: "#c4c9d4", fontFamily: "'DM Mono', monospace" }}>
-          {String(index + 1).padStart(2, "0")}
-        </span>
+const toMin = (h: string) => {
+  if (!h) return 0;
+  const [hh, mm] = h.split(":").map(Number);
+  return hh * 60 + (mm || 0);
+};
 
-        {/* Avatar */}
-        <div style={{
-          width: 32, height: 32, borderRadius: "50%",
-          background: open ? "#dbeafe" : "#f1f5f9",
-          color: open ? "#1d4ed8" : "#64748b",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 11, fontWeight: 700, flexShrink: 0, transition: "all 0.15s",
-        }}>
-          {initials}
-        </div>
+const timeToTop = (t: string) => ((toMin(t) - START_MIN) / 15) * PX_PER_SLOT;
+const timeToPx = (start: string, end: string) =>
+  Math.max(((toMin(end) - toMin(start)) / 15) * PX_PER_SLOT, 1);
 
-        {/* Docente */}
-        <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: "#111827", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            {g.docente}
-          </div>
-          <div style={{ fontSize: 11, color: "#6b7280", marginTop: 1 }}>
-            {g.curso}
-          </div>
-        </div>
+const TOTAL_H = (HORAS.length - 1) * PX_PER_SLOT;
 
-        {/* Grado */}
-        <span style={{
-          background: "#f1f5f9", color: "#475569", borderRadius: 5,
-          padding: "2px 8px", fontSize: 11, fontWeight: 600,
-          textAlign: "center",
-        }}>
-          {g.grado}
-        </span>
-
-        {/* Sección */}
-        <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 500 }}>
-          {g.seccion || "Sin sección"}
-        </span>
-
-        {/* Bloques badge */}
-        <span style={{
-          background: open ? "#dbeafe" : "#f8f9fb",
-          color: open ? "#2563eb" : "#6b7280",
-          borderRadius: 5, padding: "2px 8px",
-          fontSize: 11, fontWeight: 600, textAlign: "center",
-          transition: "all 0.15s",
-        }}>
-          {g.bloques.length} bloque{g.bloques.length !== 1 ? "s" : ""}
-        </span>
-
-        {/* Chevron */}
-        <div style={{ color: "#6b7280", display: "flex", justifyContent: "center", transition: "transform 0.2s", transform: open ? "rotate(0deg)" : "rotate(-90deg)" }}>
-          <ChevronDown style={{ width: 15, height: 15 }} />
-        </div>
-      </button>
-
-      {/* Panel expandido — bloques */}
-      {open && (
-        <div style={{ borderTop: "1px solid #e8edf5", padding: "10px 14px 12px", background: "#f8faff" }}>
-          {/* Mini cabecera de columnas */}
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "120px 100px 100px 1fr",
-            padding: "5px 8px 5px",
-            marginBottom: 4,
-          }}>
-            {["Día", "Inicio", "Fin", "Aula"].map((h) => (
-              <span key={h} style={{ fontSize: 10, fontWeight: 600, color: "#4b5563", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                {h}
-              </span>
-            ))}
-          </div>
-
-          {/* Filas de bloques */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-            {g.bloques.map((b) => {
-              const diaColor = DIA_COLORS[b.dia_semana] || { bg: "#f1f5f9", color: "#475569" };
-              return (
-                <div
-                  key={b.id_horario}
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "120px 100px 100px 1fr",
-                    alignItems: "center",
-                    background: "#fff",
-                    border: "1px solid #edf0f5",
-                    borderRadius: 6,
-                    padding: "7px 8px",
-                  }}
-                >
-                  <span style={{
-                    background: diaColor.bg, color: diaColor.color,
-                    borderRadius: 4, padding: "2px 8px",
-                    fontSize: 11, fontWeight: 600, display: "inline-block",
-                  }}>
-                    {b.dia_semana}
-                  </span>
-
-                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                    <Clock style={{ width: 11, height: 11, color: "#6b7280" }} />
-                    <span style={{ fontSize: 12, fontWeight: 700, color: "#111827", fontFamily: "'DM Mono', monospace" }}>
-                      {normalizeHora(b.hora_inicio)}
-                    </span>
-                  </div>
-
-                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                    <Clock style={{ width: 11, height: 11, color: "#6b7280" }} />
-                    <span style={{ fontSize: 12, fontWeight: 700, color: "#111827", fontFamily: "'DM Mono', monospace" }}>
-                      {normalizeHora(b.hora_fin)}
-                    </span>
-                  </div>
-
-                  <span style={{ fontSize: 12, color: b.aula ? "#374151" : "#c4c9d4" }}>
-                    {b.aula || "—"}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── Componente principal ──────────────────────────────────────────────────
 export default function ScheduleGrid() {
   const [periodos, setPeriodos] = useState<PeriodoItem[]>([]);
   const [docentes, setDocentes] = useState<DocenteItem[]>([]);
   const [grados, setGrados] = useState<GradoItem[]>([]);
+  const [secciones, setSecciones] = useState<SeccionItem[]>([]);
   const [cursos, setCursos] = useState<CursoItem[]>([]);
-  const [asignacionesDocente, setAsignacionesDocente] = useState<AsignacionDocente[]>([]);
 
   const [idPeriodo, setIdPeriodo] = useState<string>("");
   const [idDocente, setIdDocente] = useState<string>("");
   const [idGrado, setIdGrado] = useState<string>("");
-  const [idCurso, setIdCurso] = useState<string>("");
+  const [idSeccion, setIdSeccion] = useState<string>("");
 
   const [rows, setRows] = useState<ReporteRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -246,68 +97,32 @@ export default function ScheduleGrid() {
   const [searched, setSearched] = useState(false);
 
   useEffect(() => {
-    const loadCatalogs = async () => {
+    const loadCatalogos = async () => {
       setLoading(true);
       try {
         const { data } = await api.get("/horario/catalogos");
-        if (!data?.success) { setError("No se pudieron cargar catálogos."); return; }
+        if (!data?.success) {
+          setError("No se pudieron cargar catálogos.");
+          return;
+        }
         const payload = data.data || {};
         const periodosData = payload.periodos || [];
         setPeriodos(periodosData);
         setDocentes(payload.docentes || []);
         setGrados(payload.grados || []);
+        setSecciones(payload.secciones || []);
         setCursos(payload.cursos || []);
+
         const periodoActivo = periodosData.find((p: PeriodoItem) => p.activo === 1);
         if (periodoActivo) setIdPeriodo(String(periodoActivo.id));
-      } catch {
+      } catch (e) {
         setError("Error al cargar catálogos.");
       } finally {
         setLoading(false);
       }
     };
-    loadCatalogs();
+    loadCatalogos();
   }, []);
-
-  useEffect(() => {
-    const loadAsignaciones = async () => {
-      if (!idDocente || !idPeriodo) { setAsignacionesDocente([]); return; }
-      try {
-        const { data } = await api.get(`/horario/docente/${idDocente}/asignaciones`, {
-          params: { id_periodo: idPeriodo },
-        });
-        setAsignacionesDocente(data?.success ? data.data || [] : []);
-      } catch {
-        setAsignacionesDocente([]);
-      }
-    };
-    loadAsignaciones();
-  }, [idDocente, idPeriodo]);
-
-  const gradosFiltrados = useMemo(() => {
-    if (!idDocente) return grados;
-    const map = new Map<number, string>();
-    for (const a of asignacionesDocente) {
-      if (!map.has(a.id_grado)) map.set(a.id_grado, a.grado);
-    }
-    return Array.from(map.entries()).map(([id, nombre]) => ({ id, nombre }));
-  }, [idDocente, asignacionesDocente, grados]);
-
-  const cursosFiltrados = useMemo(() => {
-    if (!idDocente) return cursos;
-    const base = idGrado
-      ? asignacionesDocente.filter((a) => String(a.id_grado) === idGrado)
-      : asignacionesDocente;
-    const map = new Map<number, string>();
-    for (const a of base) {
-      if (!map.has(a.id_curso)) map.set(a.id_curso, a.curso);
-    }
-    return Array.from(map.entries()).map(([id, nombre]) => ({ id, nombre }));
-  }, [idDocente, idGrado, asignacionesDocente, cursos]);
-
-  useEffect(() => { setIdGrado(""); setIdCurso(""); }, [idDocente, idPeriodo]);
-  useEffect(() => {
-    if (idCurso && !cursosFiltrados.some((c) => String(c.id) === idCurso)) setIdCurso("");
-  }, [cursosFiltrados, idCurso]);
 
   const cargarReporte = async () => {
     setLoading(true);
@@ -319,10 +134,11 @@ export default function ScheduleGrid() {
       if (idPeriodo) params.id_periodo = idPeriodo;
       if (idDocente) params.id_docente = idDocente;
       if (idGrado) params.id_grado = idGrado;
-      if (idCurso) params.id_curso = idCurso;
+      if (idSeccion) params.id_seccion = idSeccion;
+
       const { data } = await api.get("/horario/reporte", { params });
       if (!data?.success) {
-        setError(data?.message || "No se pudo cargar reporte.");
+        setError(data?.message || "No se pudo cargar el reporte.");
         return;
       }
       setRows(data.data || []);
@@ -333,158 +149,286 @@ export default function ScheduleGrid() {
     }
   };
 
-  const grupos = useMemo(() => {
-    const map = new Map<string, Grupo>();
-    for (const r of rows) {
-      const key = `${r.id_asignacion}`;
-      if (!map.has(key)) {
-        map.set(key, { key, docente: r.docente, grado: r.grado, curso: r.curso, seccion: r.seccion, anio: r.anio, bloques: [] });
+  const { TEACHERS, SUBJECTS, blocks } = useMemo(() => {
+    const tMap: Record<string, Teacher> = {};
+    const sMap: Record<string, Subject> = {};
+
+    docentes.forEach((d) => {
+      tMap[String(d.id)] = { id: String(d.id), name: d.nombre_completo };
+    });
+
+    cursos.forEach((c) => {
+      const color = getSubjectColor(c.id);
+      sMap[String(c.id)] = {
+        id: String(c.id),
+        name: c.nombre,
+        bgColor: color.bgColor,
+        textColor: color.textColor,
+      };
+    });
+
+    const mappedBlocks = rows.map((r, i) => {
+      if (!tMap[String(r.id_docente)]) {
+        tMap[String(r.id_docente)] = { id: String(r.id_docente), name: r.docente };
       }
-      map.get(key)?.bloques.push(r);
-    }
-    const out = Array.from(map.values());
-    for (const g of out) {
-      g.bloques.sort((a, b) => {
-        const d = (DIA_ORDEN[a.dia_semana] || 99) - (DIA_ORDEN[b.dia_semana] || 99);
-        return d !== 0 ? d : normalizeHora(a.hora_inicio).localeCompare(normalizeHora(b.hora_inicio));
-      });
-    }
-    return out;
-  }, [rows]);
+      if (!sMap[String(r.id_curso)]) {
+        const color = getSubjectColor(r.id_curso);
+        sMap[String(r.id_curso)] = {
+          id: String(r.id_curso),
+          name: r.curso,
+          bgColor: color.bgColor,
+          textColor: color.textColor,
+        };
+      }
 
-  const selectStyle: React.CSSProperties = {
-    width: "100%", border: "1px solid #e2e4e9", borderRadius: 6,
-    padding: "6px 8px", fontSize: 13, color: "#374151",
-    background: "#f9fafb", outline: "none",
-  };
+      const color = getSubjectColor(r.id_curso);
 
-  const labelStyle: React.CSSProperties = {
-    fontSize: 11, fontWeight: 700, color: "#4b5563",
-    textTransform: "uppercase", letterSpacing: "0.06em",
-    display: "block", marginBottom: 5,
-  };
+      // Limpiar tildes u otras cosas
+      const diaClean = r.dia_semana.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+      return {
+        id: r.id_horario || i,
+        dia: diaClean,
+        horaInicio: r.hora_inicio.slice(0, 5),
+        horaFin: r.hora_fin.slice(0, 5),
+        curso: r.curso,
+        docente: r.docente,
+        grado: r.grado,
+        seccion: r.seccion,
+        aula: r.aula,
+        bgColor: color.bgColor,
+        textColor: color.textColor,
+        borderColor: color.borderColor
+      };
+    });
+
+    return { TEACHERS: tMap, SUBJECTS: sMap, blocks: mappedBlocks };
+  }, [rows, docentes, cursos]);
 
   return (
-    <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", maxWidth: 1000, margin: "0 auto", padding: "28px 24px", color: "#1a1d23" }}>
-      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
-
-      {/* Encabezado */}
-      <div style={{ marginBottom: 22 }}>
-        <p style={{ fontSize: 11, color: "#6b7280", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>
-          Gestión académica
-        </p>
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: "#111827", margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
-          <CalendarDays style={{ width: 20, height: 20, color: "#2563eb" }} />
-          Horarios Creados
-        </h1>
-      </div>
-
-      {/* Filtros */}
-      <div style={{
-        background: "#fff", border: "1px solid #e2e4e9", borderRadius: 8,
-        padding: "14px 16px", marginBottom: 18,
-        display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 110px", gap: 12, alignItems: "end",
-      }}>
-        <div>
-          <label style={labelStyle}>Período</label>
-          <select style={selectStyle} value={idPeriodo} onChange={(e) => setIdPeriodo(e.target.value)}>
-            <option value="">Todos</option>
-            {periodos.map((p) => <option key={p.id} value={p.id}>{p.anio}</option>)}
-          </select>
-        </div>
-        <div>
-          <label style={labelStyle}>Docente</label>
-          <select style={selectStyle} value={idDocente} onChange={(e) => setIdDocente(e.target.value)}>
-            <option value="">Todos</option>
-            {docentes.map((d) => <option key={d.id} value={d.id}>{d.nombre_completo}</option>)}
-          </select>
-        </div>
-        <div>
-          <label style={labelStyle}>Grado</label>
-          <select style={selectStyle} value={idGrado} onChange={(e) => setIdGrado(e.target.value)}>
-            <option value="">Todos</option>
-            {gradosFiltrados.map((g) => <option key={g.id} value={g.id}>{g.nombre}</option>)}
-          </select>
-        </div>
-        <div>
-          <label style={labelStyle}>Curso</label>
-          <select style={selectStyle} value={idCurso} onChange={(e) => setIdCurso(e.target.value)}>
-            <option value="">Todos</option>
-            {cursosFiltrados.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-          </select>
-        </div>
-        <button
-          onClick={cargarReporte}
-          style={{
-            background: "#2563eb", color: "#fff", border: "none", borderRadius: 7,
-            padding: "8px 0", fontSize: 13, fontWeight: 600, cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-          }}
-        >
-          <Filter style={{ width: 13, height: 13 }} />
-          Filtrar
-        </button>
-      </div>
-
-      {/* Error */}
-      {error && (
-        <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#b91c1c", fontSize: 13, borderRadius: 6, padding: "10px 14px", marginBottom: 14 }}>
-          {error}
-        </div>
-      )}
-
-      {/* Cabecera de columnas (solo cuando hay resultados) */}
-      {searched && !loading && grupos.length > 0 && (
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "28px 36px 1fr 90px 90px 70px 28px",
-          gap: 10,
-          padding: "7px 14px",
-          marginBottom: 6,
-        }}>
-          {["", "", "Docente · Curso", "Grado", "Sección", "Bloques", ""].map((h, i) => (
-            <span key={i} style={{
-              fontSize: 10, fontWeight: 700, color: "#4b5563",
-              textTransform: "uppercase", letterSpacing: "0.06em",
-            }}>{h}</span>
-          ))}
-        </div>
-      )}
-
-      {/* Contenido */}
-      {loading ? (
-        <div style={{ background: "#fff", border: "1px solid #e2e4e9", borderRadius: 8, padding: "48px", textAlign: "center", color: "#374151" }}>
-          <Loader2 style={{ width: 22, height: 22, display: "block", margin: "0 auto 8px", color: "#2563eb" }} className="animate-spin" />
-          <p style={{ fontSize: 13, fontWeight: 500 }}>Cargando horarios...</p>
-        </div>
-      ) : !searched ? (
-        <div style={{ background: "#fff", border: "1px solid #e2e4e9", borderRadius: 8, padding: "56px 32px", textAlign: "center" }}>
-          <CalendarDays style={{ width: 36, height: 36, color: "#cbd5e1", display: "block", margin: "0 auto 12px" }} />
-          <p style={{ fontSize: 13, color: "#4b5563", fontWeight: 500 }}>
-            Selecciona los filtros y haz clic en <strong style={{ color: "#111827" }}>Filtrar</strong> para ver los horarios.
-          </p>
-        </div>
-      ) : grupos.length === 0 ? (
-        <div style={{ background: "#fff", border: "1px solid #e2e4e9", borderRadius: 8, padding: "40px", textAlign: "center", color: "#374151", fontSize: 13, fontWeight: 500 }}>
-          No se encontraron horarios con los criterios seleccionados.
-        </div>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-          {grupos.map((g, i) => (
-            <GrupoRow key={g.key} g={g} index={i} />
-          ))}
-
-          {/* Totalizador */}
-          <div style={{ padding: "6px 4px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: 11, color: "#6b7280", fontWeight: 500 }}>
-              Haz clic en una fila para ver sus bloques
-            </span>
-            <span style={{ fontSize: 11, color: "#4b5563", fontWeight: 500 }}>
-              {grupos.length} asignación{grupos.length !== 1 ? "es" : ""} · {rows.length} bloque{rows.length !== 1 ? "s" : ""} totales
-            </span>
+    <div className="min-h-screen bg-transparent p-4 md:p-8 font-sans">
+      <div className="max-w-6xl mx-auto space-y-8">
+        {/* ENCABEZADO Y FILTROS */}
+        <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+          <div className="flex items-center gap-3 mb-6">
+            <CalendarDays className="w-8 h-8 text-blue-600" />
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800 uppercase tracking-wide">
+                Horario de Clases
+              </h1>
+              <p className="text-gray-500 text-sm">Visualización de Horarios Dinámicos</p>
+            </div>
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+            <div>
+              <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Período</label>
+              <select
+                className="w-full border border-gray-300 rounded-md p-2 bg-gray-50 text-sm text-gray-800"
+                value={idPeriodo}
+                onChange={(e) => setIdPeriodo(e.target.value)}
+              >
+                <option value="">Todos</option>
+                {periodos.map((p) => (
+                  <option key={p.id} value={p.id}>{p.anio}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Docente</label>
+              <select
+                className="w-full border border-gray-300 rounded-md p-2 bg-gray-50 text-sm text-gray-800"
+                value={idDocente}
+                onChange={(e) => setIdDocente(e.target.value)}
+              >
+                <option value="">Todos</option>
+                {docentes.map((d) => (
+                  <option key={d.id} value={d.id}>{d.nombre_completo}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Grado</label>
+              <select
+                className="w-full border border-gray-300 rounded-md p-2 bg-gray-50 text-sm text-gray-800"
+                value={idGrado}
+                onChange={(e) => setIdGrado(e.target.value)}
+              >
+                <option value="">Todos</option>
+                {grados.map((g) => (
+                  <option key={g.id} value={g.id}>{g.nombre}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Sección</label>
+              <select
+                className="w-full border border-gray-300 rounded-md p-2 bg-gray-50 text-sm text-gray-800"
+                value={idSeccion}
+                onChange={(e) => setIdSeccion(e.target.value)}
+              >
+                <option value="">Todos</option>
+                {secciones.map((s) => (
+                  <option key={s.id} value={s.id}>{s.nombre}</option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              onClick={cargarReporte}
+              className="bg-blue-600 hover:bg-blue-700 transition-colors text-white font-semibold flex items-center justify-center gap-2 py-2 px-4 rounded-md h-[38px] w-full"
+            >
+              <Filter className="w-4 h-4" />
+              Filtrar
+            </button>
+          </div>
+          {error && <div className="mt-4 text-red-600 bg-red-100 p-2 text-sm rounded">{error}</div>}
         </div>
-      )}
+
+        {/* CONTENIDO PRINCIPAL / GRILLA 15 MIN */}
+        {loading ? (
+          <div className="flex flex-col items-center justify-center p-12 bg-white rounded-lg shadow-md border border-gray-200">
+            <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-4" />
+            <p className="font-medium text-gray-600">Cargando horario...</p>
+          </div>
+        ) : !searched ? (
+          <div className="flex flex-col items-center justify-center p-12 bg-white rounded-lg shadow-md border border-gray-200 text-center">
+            <CalendarDays className="w-12 h-12 text-gray-300 mb-4" />
+            <p className="text-gray-500 font-medium">Filtre por un Docente o Grado y Sección para visualizar la matriz del horario.</p>
+          </div>
+        ) : blocks.length === 0 ? (
+          <div className="flex flex-col items-center justify-center p-12 bg-white rounded-lg shadow-md border border-gray-200 text-center">
+            <p className="text-gray-500 font-medium">No se encontraron horarios para los filtros aplicados.</p>
+          </div>
+        ) : (
+          <>
+            <div className="bg-white border rounded-[16px] shadow-sm overflow-hidden" style={{ border: "1px solid #f1f5f9" }}>
+              <div style={{ overflowX: "auto" }}>
+                <div style={{ minWidth: "800px", padding: "16px" }}>
+
+                  {/* Headers */}
+                  <div style={{ display: "flex", borderBottom: "1px solid #f1f5f9", position: "sticky", top: 0, zIndex: 10, background: "#fff", paddingBottom: "12px" }}>
+                    <div style={{ width: 60, flexShrink: 0 }} />
+                    {DIAS.map((dia, di) => (
+                      <div key={dia} style={{ flex: 1, textAlign: "center", borderLeft: "1px solid #e2e8f0" }}>
+                        <p style={{ margin: 0, fontSize: "11px", fontWeight: 600, color: "#94a3b8", textTransform: "uppercase" }}>{dia.slice(0, 3)}</p>
+                        <p style={{ margin: "2px 0 0", fontSize: "14px", fontWeight: 800, color: "#1e293b" }}>{DIAS_SHORT[di]}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div style={{ display: "flex", position: "relative" }}>
+                    {/* Axis Horas */}
+                    <div style={{ width: 60, flexShrink: 0, position: "relative", height: TOTAL_H, borderRight: "1px solid #e2e8f0" }}>
+                      {HORAS.map((h, hi) => (
+                        (h.endsWith(":00") || h.endsWith(":30")) && hi < HORAS.length - 1 && (
+                          <div key={h} style={{ position: "absolute", top: timeToTop(h) - 7, left: 0, right: 8, display: "flex", justifyContent: "flex-end", fontSize: "11px", fontWeight: 700, color: "#64748b" }}>{h}</div>
+                        )
+                      ))}
+                    </div>
+
+                    {/* Columns grid */}
+                    <div style={{ flex: 1, display: "grid", gridTemplateColumns: "repeat(5, 1fr)", background: "#fff" }}>
+                      {DIAS.map((dia) => {
+                        const dayBlocks = blocks.filter(b => b.dia === dia);
+
+                        return (
+                          <div key={dia} style={{ position: "relative", borderLeft: "1px solid #e2e8f0" }}>
+                            {/* Grid Lines */}
+                            {HORAS.map((h, i) => (
+                              <div key={h} style={{ position: "absolute", top: timeToTop(h), left: 0, right: 0, height: PX_PER_SLOT, borderBottom: i % 2 === 0 ? "1px dashed #cbd5e1" : "1px solid #e2e8f0", zIndex: 0 }} />
+                            ))}
+
+                            {/* Blocks */}
+                            {dayBlocks.map((b, bi) => {
+                              const top = timeToTop(b.horaInicio);
+                              const height = timeToPx(b.horaInicio, b.horaFin);
+
+                              return (
+                                <div
+                                  key={b.id + "-" + bi}
+                                  className={`${b.bgColor} ${b.textColor} absolute shadow hover:brightness-110 transition-colors duration-200 border-l-4 ${b.borderColor}`}
+                                  style={{
+                                    top,
+                                    left: 4,
+                                    right: 4,
+                                    height: height - 2,
+                                    borderRadius: "4px 8px 8px 4px",
+                                    zIndex: 2,
+                                    padding: "4px 8px",
+                                    overflow: 'hidden'
+                                  }}
+                                >
+                                  <div className="flex flex-col h-full items-start justify-start space-y-0.5">
+                                    <span className="font-extrabold text-[10px] leading-tight md:text-xs">
+                                      {b.curso}
+                                    </span>
+                                    <span className="text-[9px] md:text-[10px] opacity-90 font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-full">
+                                      Prof. {b.docente.split(" ")[0]}
+                                    </span>
+                                    {b.grado && b.seccion && (
+                                      <span className="text-[9px] opacity-80 font-bold uppercase">
+                                        {b.grado} {b.seccion}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* PLANA DOCENTE / LEYENDA */}
+            <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200 mt-8">
+              <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Plana Docente Involucrada</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {Object.values(TEACHERS).map((teacher) => {
+                  const teacherCourses = Object.values(SUBJECTS).filter((sub) =>
+                    blocks.some(
+                      (block) => block.docente === teacher.name && block.curso === sub.name
+                    )
+                  );
+
+                  if (teacherCourses.length === 0) return null;
+
+                  return (
+                    <div
+                      key={teacher.id}
+                      className="flex items-start space-x-3 p-3 bg-gray-50 rounded border border-gray-100"
+                    >
+                      <div className="flex-shrink-0 w-10 h-10 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center font-bold">
+                        {teacher.name.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-800 text-sm">{teacher.name}</p>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {teacherCourses.map((course) => (
+                            <span
+                              key={course.id}
+                              className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${course.bgColor} ${course.textColor}`}
+                            >
+                              {course.name}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

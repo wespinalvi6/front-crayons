@@ -26,6 +26,8 @@ import { Search, Loader2, AlertCircle, AlertTriangle, CheckCircle2, X } from "lu
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+
 interface CursoAsignado {
   idCurso: number;
   idGrado: number;
@@ -150,7 +152,7 @@ export default function RegisterTeacher() {
   const { data: periodos = EMPTY_ARRAY } = useQuery<any[]>({
     queryKey: ['periodosPromocion'],
     queryFn: async () => {
-      const response = await axios.get("https://api.colegiocrayons.com/api/promocion/periodos");
+      const response = await axios.get(`${API_URL}/promocion/periodos`);
       if (response.data.status) {
         return response.data.data;
       }
@@ -178,7 +180,7 @@ export default function RegisterTeacher() {
     queryKey: ['disponibilidadCursos', currentYear],
     queryFn: async () => {
       if (!currentYear) return [];
-      const response = await axios.get(`https://api.colegiocrayons.com/api/docente/disponibilidad-cursos/${currentYear}`);
+      const response = await axios.get(`${API_URL}/docente/disponibilidad-cursos/${currentYear}`);
       if (response.data.success) {
         return response.data.data;
       }
@@ -206,7 +208,7 @@ export default function RegisterTeacher() {
     setCredenciales(null);
     try {
       // 1. Intentar búsqueda local
-      const localRes = await axios.get(`https://api.colegiocrayons.com/api/docente/buscar-local/${formData.dni}`);
+      const localRes = await axios.get(`${API_URL}/docente/buscar-local/${formData.dni}`);
 
       if (localRes.data.success) {
         const d = localRes.data.data;
@@ -229,7 +231,7 @@ export default function RegisterTeacher() {
 
       // 2. Si no es local, buscar en RENIEC/DNI externo
       const response = await axios.get<DniResponse>(
-        `https://api.colegiocrayons.com/api/dni/buscar-dni/${formData.dni}`
+        `${API_URL}/dni/buscar-dni/${formData.dni}`
       );
 
       if (response.data.status) {
@@ -292,7 +294,7 @@ export default function RegisterTeacher() {
       };
 
       const { data } = await axios.post<ApiResponse>(
-        "https://api.colegiocrayons.com/api/docente/registrar-docente",
+        `${API_URL}/docente/registrar-docente`,
         payload
       );
 
@@ -642,9 +644,9 @@ export default function RegisterTeacher() {
         <DialogContent className="max-w-[340px] p-0 overflow-hidden rounded-2xl border-none shadow-2xl">
           <div className="flex flex-col items-center text-center p-8">
             <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${modalConfig.type === "success" ? "bg-emerald-50 text-emerald-500" :
-                modalConfig.type === "danger" ? "bg-rose-50 text-rose-500" :
-                  modalConfig.type === "warning" ? "bg-amber-50 text-amber-500" :
-                    "bg-blue-50 text-blue-500"
+              modalConfig.type === "danger" ? "bg-rose-50 text-rose-500" :
+                modalConfig.type === "warning" ? "bg-amber-50 text-amber-500" :
+                  "bg-blue-50 text-blue-500"
               }`}>
               {modalConfig.type === "success" && <CheckCircle2 size={32} />}
               {modalConfig.type === "danger" && <X size={32} />}

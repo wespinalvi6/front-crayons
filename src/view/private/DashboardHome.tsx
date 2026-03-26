@@ -141,7 +141,7 @@ export default function DashboardHome() {
           description="Total de población matriculada"
         />
         <MetricCard
-          title="Morosidad Total"
+          title="Pagos Pendientes"
           value={formatCurrency(kpis.pagos_pendientes)}
           icon={<AlertCircle className="h-4 w-4 text-red-600" />}
           description={`${kpis.estudiantes_con_deuda} estudiantes con deuda`}

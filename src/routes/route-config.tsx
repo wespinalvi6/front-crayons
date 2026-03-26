@@ -45,6 +45,7 @@ import ReporteAsistenciaBloques from "@/view/private/teacher/ReporteAsistenciaBl
 import ScheduleAssignment from "@/view/private/ScheduleAssignment";
 import ScheduleGrid from "@/view/private/ScheduleGrid";
 import TeacherHome from "@/view/private/teacher/TeacherHome";
+import MySchedule from "@/view/private/teacher/MySchedule";
 
 // Componente para protección de rutas
 
@@ -112,6 +113,7 @@ const router = createBrowserRouter([
       { path: "reporte-clases", element: <ReporteAsistenciaClases /> },
       { path: "justificaciones", element: <JustificacionesDocente /> },
       { path: "reportes-bloques", element: <ReporteAsistenciaBloques /> },
+      { path: "mi-horario", element: <MySchedule /> },
     ],
     // children: [{ path: "list-teacher", element: <ListTeacher /> }],
   },

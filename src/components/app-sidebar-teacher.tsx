@@ -4,7 +4,8 @@ import {
   FileText,
   ShieldCheck,
   LogOut,
-  UserCheck
+  UserCheck,
+  Calendar
 } from 'lucide-react';
 import {
   Sidebar,
@@ -22,6 +23,8 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+
 export function AppSidebarTeacher({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
@@ -34,12 +37,13 @@ export function AppSidebarTeacher({
     { id: 'historial', label: 'Historial General', icon: History, url: 'ver-asistencia' },
     { id: 'reporte', label: 'Reporte Diario', icon: FileText, url: 'reporte-clases' },
     { id: 'justificaciones', label: 'Justificaciones', icon: ShieldCheck, url: 'justificaciones' },
+    { id: 'horario', label: 'Mi Horario', icon: Calendar, url: 'mi-horario' },
   ];
 
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('https://api.colegiocrayons.com/api/auth/logout', {
+      const response = await fetch(`${API_URL}/auth/logout`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

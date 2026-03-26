@@ -17,6 +17,8 @@ import axios, { AxiosError } from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { FileText, RefreshCw, Loader2, Search, CheckCircle2, ChevronLeft } from "lucide-react";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+
 const steps = [
   { id: 1, title: "Estudiante" },
   { id: 2, title: "Apoderado" },
@@ -213,7 +215,7 @@ export default function RegisterStudent() {
       const formDataPdf = new FormData();
       formDataPdf.append('file', file);
 
-      const response = await fetch('https://api.colegiocrayons.com/api/ocr/extraer-n8n', {
+      const response = await fetch(`${API_URL}/ocr/extraer-n8n`, {
         method: 'POST',
         body: formDataPdf,
       });
@@ -428,7 +430,7 @@ export default function RegisterStudent() {
     queryFn: async () => {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
-      const response = await axios.get("https://api.colegiocrayons.com/api/grado/lista-grado", { headers });
+      const response = await axios.get(`${API_URL}/grado/lista-grado`, { headers });
       return response.data.data;
     },
     staleTime: 60 * 60 * 1000, // 1 hora
@@ -439,7 +441,7 @@ export default function RegisterStudent() {
     queryFn: async () => {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
-      const response = await axios.get("https://api.colegiocrayons.com/api/cuotas/periodos", { headers });
+      const response = await axios.get(`${API_URL}/cuotas/periodos`, { headers });
       return response.data.data;
     },
     staleTime: 60 * 60 * 1000, // 1 hora
@@ -606,7 +608,7 @@ export default function RegisterStudent() {
       setSearchingFor('alumno');
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `https://api.colegiocrayons.com/api/dni/buscar-dni/${formData.alumno_dni}`,
+        `${API_URL}/dni/buscar-dni/${formData.alumno_dni}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -650,7 +652,7 @@ export default function RegisterStudent() {
       setSearchingFor(tipo);
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `https://api.colegiocrayons.com/api/dni/buscar-dni/${dni}`,
+        `${API_URL}/dni/buscar-dni/${dni}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -788,7 +790,7 @@ export default function RegisterStudent() {
 
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        "https://api.colegiocrayons.com/api/matricula/matricula",
+        `${API_URL}/matricula/matricula`,
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -798,13 +800,23 @@ export default function RegisterStudent() {
         isError: false,
       });
 
-      // Mostrar credenciales generadas
+      // Mostrar credenciales generadas para los padres
       if (response.data.data) {
-        const { username, password } = response.data.data;
-        setMessage({
-          text: `Matrícula exitosa! Usuario: ${username} | Contraseña: ${password}`,
-          isError: false,
-        });
+        const { usuarios_padres } = response.data.data;
+        if (usuarios_padres && usuarios_padres.length > 0) {
+          const creds = usuarios_padres.map((u: any) =>
+            `${u.relacion}: ${u.username} (Pass: ${u.password})`
+          ).join(' | ');
+          setMessage({
+            text: `Matrícula exitosa! Credenciales: ${creds}`,
+            isError: false,
+          });
+        } else {
+          setMessage({
+            text: "Matrícula registrada correctamente (No se generaron nuevas credenciales)",
+            isError: false,
+          });
+        }
       }
 
       // Reset form

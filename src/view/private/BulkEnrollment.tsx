@@ -24,6 +24,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+
 // Tipo para los datos de grado desde el API
 interface GradoData {
     id: number;
@@ -107,7 +109,7 @@ export default function BulkEnrollment() {
     const { data: gradosDisponibles = [] } = useQuery<GradoData[]>({
         queryKey: ['grados'],
         queryFn: async () => {
-            const response = await fetch('https://api.colegiocrayons.com/api/grado/lista-grado');
+            const response = await fetch(`${API_URL}/grado/lista-grado`);
             const data = await response.json();
             if (data.status && data.data) {
                 return data.data;
@@ -127,7 +129,7 @@ export default function BulkEnrollment() {
     // Función para obtener los costos del año
     const obtenerCostosAnio = async (anio: string, index: number) => {
         try {
-            const response = await fetch(`https://api.colegiocrayons.com/api/cuotas/anio/${anio}`);
+            const response = await fetch(`${API_URL}/cuotas/anio/${anio}`);
             const data = await response.json();
             if (data.success) {
                 setStudentsData(prev => {
@@ -215,7 +217,7 @@ export default function BulkEnrollment() {
             formData.append('pdf', file);
 
             // Llamar a la API para este archivo
-            const response = await fetch('https://api.colegiocrayons.com/api/ocr/extraer-ficha', {
+            const response = await fetch(`${API_URL}/ocr/extraer-ficha`, {
                 method: 'POST',
                 body: formData,
             });
@@ -284,7 +286,7 @@ export default function BulkEnrollment() {
             formData.append('pdf', fileToReprocess);
 
             // Llamar a la API
-            const response = await fetch('https://api.colegiocrayons.com/api/ocr/extraer-ficha', {
+            const response = await fetch(`${API_URL}/ocr/extraer-ficha`, {
                 method: 'POST',
                 body: formData,
             });
@@ -364,7 +366,7 @@ export default function BulkEnrollment() {
         setSuccessMessage(null);
 
         try {
-            const response = await fetch('https://api.colegiocrayons.com/api/matricula/matricula/insertar-extraidos', {
+            const response = await fetch(`${API_URL}/matricula/matricula/insertar-extraidos`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

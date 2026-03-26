@@ -23,6 +23,8 @@ import { Loader2, UserX, UserPlus, AlertCircle, AlertTriangle, CheckCircle2, X }
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+
 interface Periodo {
   id: number;
   anio: number;
@@ -118,7 +120,7 @@ export default function ListStudent() {
     queryKey: ['periodosA'],
     queryFn: async () => {
       const token = localStorage.getItem("token");
-      const response = await axios.get("https://api.colegiocrayons.com/api/cuotas/periodos", {
+      const response = await axios.get(`${API_URL}/cuotas/periodos`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       return response.data.success ? response.data.data : [];
@@ -130,7 +132,7 @@ export default function ListStudent() {
     queryKey: ['grados'],
     queryFn: async () => {
       const token = localStorage.getItem("token");
-      const response = await axios.get("https://api.colegiocrayons.com/api/grado/lista-grado", {
+      const response = await axios.get(`${API_URL}/grado/lista-grado`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       return response.data.status ? response.data.data : [];
@@ -144,7 +146,7 @@ export default function ListStudent() {
       if (!appliedFilters?.year || !appliedFilters?.grade) return null;
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `https://api.colegiocrayons.com/api/alumno/lista-alumnos/${appliedFilters.year}/${appliedFilters.grade}`,
+        `${API_URL}/alumno/lista-alumnos/${appliedFilters.year}/${appliedFilters.grade}`,
         {
           headers: { Authorization: `Bearer ${token}` },
           params: { page, limit }
@@ -209,16 +211,16 @@ export default function ListStudent() {
     const nuevoActivo = isRetiring ? 0 : 1;
 
     const confirmMsg = isRetiring
-      ? "¿Estás seguro de que deseas RETIRAR a este alumno? Se le quitará el acceso al sistema."
+      ? "¿Estás seguro de que deseas dar de baja a este alumno? Se le quitará el acceso al sistema."
       : "¿Estás seguro de que deseas RE-INCORPORAR a este alumno? Se le habilitará el acceso de nuevo.";
 
     showConfirm(
-      isRetiring ? "Retirar Alumno" : "Habilitar Alumno",
+      isRetiring ? "Dar de Baja" : "Habilitar Alumno",
       confirmMsg,
       async () => {
         try {
           const { data } = await axios.patch(
-            `https://api.colegiocrayons.com/api/alumno/toggle-estado/${alumno_id}`,
+            `${API_URL}/alumno/toggle-estado/${alumno_id}`,
             { estado: nuevoEstado, activo: nuevoActivo },
             { headers: { Authorization: `Bearer ${token}` } }
           );
@@ -453,9 +455,9 @@ export default function ListStudent() {
         <DialogContent className="max-w-[340px] p-0 overflow-hidden rounded-2xl border-none shadow-2xl">
           <div className="flex flex-col items-center text-center p-8">
             <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${modalConfig.type === "success" ? "bg-emerald-50 text-emerald-500" :
-                modalConfig.type === "danger" ? "bg-rose-50 text-rose-500" :
-                  modalConfig.type === "warning" ? "bg-amber-50 text-amber-500" :
-                    "bg-blue-50 text-blue-500"
+              modalConfig.type === "danger" ? "bg-rose-50 text-rose-500" :
+                modalConfig.type === "warning" ? "bg-amber-50 text-amber-500" :
+                  "bg-blue-50 text-blue-500"
               }`}>
               {modalConfig.type === "success" && <CheckCircle2 size={32} />}
               {modalConfig.type === "danger" && <X size={32} />}
@@ -522,7 +524,7 @@ function CardGroup({ student, showParent, setShowParent, updateStudentInList, ha
         <TableCell>
           {isRetirado ? (
             <Badge variant="destructive" className="bg-red-100 text-red-700 border-red-200">
-              Retirado
+              Baja
             </Badge>
           ) : isEgresado ? (
             <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-amber-200">
@@ -563,10 +565,10 @@ function CardGroup({ student, showParent, setShowParent, updateStudentInList, ha
               ? "text-green-600 border-green-200 hover:bg-green-50"
               : "text-red-600 border-red-200 hover:bg-red-50"
             }
-            title={isRetirado ? "Re-incorporar Estudiante" : isEgresado ? "Alumno Egresado" : "Retirar Estudiante"}
+            title={isRetirado ? "Re-incorporar Estudiante" : isEgresado ? "Alumno Egresado" : "Dar de Baja"}
           >
             {isRetirado ? <UserPlus className="w-4 h-4 mr-1" /> : <UserX className="w-4 h-4 mr-1" />}
-            {isRetirado ? "Habilitar" : "Retirar"}
+            {isRetirado ? "Habilitar" : "Dar de baja"}
           </Button>
 
           <EditarDatosButton

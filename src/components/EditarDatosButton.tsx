@@ -15,6 +15,8 @@ import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
 import { Edit } from "lucide-react";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+
 interface DatosAlumno {
   alumno_id: number;
   persona_id: number;
@@ -103,7 +105,7 @@ export default function EditarDatosButton({
         setMessage({ text: "Datos cargados correctamente", isError: false });
       } else {
         // Si no, hacemos la llamada a la API para obtener datos del alumno logueado
-        response = await axios.get("https://api.colegiocrayons.com/api/alumno/mis-datos", {
+        response = await axios.get(`${API_URL}/alumno/mis-datos`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -160,8 +162,8 @@ export default function EditarDatosButton({
 
       // Usar el endpoint correcto con el ID del alumno
       const endpoint = alumnoId
-        ? `https://api.colegiocrayons.com/api/alumno/estudiante/${alumnoId}`
-        : "https://api.colegiocrayons.com/api/alumno/mis-datos";
+        ? `${API_URL}/alumno/estudiante/${alumnoId}`
+        : `${API_URL}/alumno/mis-datos`;
 
       const response = await axios.put(endpoint, dataToSend, {
         headers: {

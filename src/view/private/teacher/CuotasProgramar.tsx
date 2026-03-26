@@ -28,6 +28,8 @@ import {
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 import { Edit, Trash2, Plus, Loader2, AlertCircle, AlertTriangle, CheckCircle2, X } from "lucide-react";
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -100,7 +102,7 @@ export default function CuotasProgramar() {
   const { data: fees = EMPTY_ARRAY } = useQuery<FeeSchedule[]>({
     queryKey: ['periodosCuotas'],
     queryFn: async () => {
-      const response = await axios.get('https://api.colegiocrayons.com/api/cuotas/periodos');
+      const response = await axios.get(`${API_URL}/cuotas/periodos`);
       if (response.data.success) {
         return response.data.data.sort((a: FeeSchedule, b: FeeSchedule) => b.anio - a.anio);
       }
@@ -163,7 +165,7 @@ export default function CuotasProgramar() {
       "¿Estás seguro de que deseas eliminar este periodo académico? Esta acción no se puede deshacer.",
       async () => {
         try {
-          const response = await axios.delete(`https://api.colegiocrayons.com/api/cuotas/eliminar-periodo/${id}`);
+          const response = await axios.delete(`${API_URL}/cuotas/eliminar-periodo/${id}`);
           if (response.data.success) {
             showAlert("Eliminado", "El periodo fue eliminado correctamente.", "success");
             queryClient.invalidateQueries({ queryKey: ['periodosCuotas'] });
@@ -186,13 +188,13 @@ export default function CuotasProgramar() {
       };
 
       if (editingId) {
-        const response = await axios.put(`https://api.colegiocrayons.com/api/cuotas/actualizar-periodo/${editingId}`, payload);
+        const response = await axios.put(`${API_URL}/cuotas/actualizar-periodo/${editingId}`, payload);
         if (response.data.success) {
           showAlert("Actualizado", "El periodo fue actualizado correctamente.", "success");
           queryClient.invalidateQueries({ queryKey: ['periodosCuotas'] });
         }
       } else {
-        const response = await axios.post('https://api.colegiocrayons.com/api/cuotas/agregar-periodo', payload);
+        const response = await axios.post(`${API_URL}/cuotas/agregar-periodo`, payload);
         if (response.status === 200 || response.status === 201) {
           showAlert("Éxito", "El periodo fue creado correctamente.", "success");
           queryClient.invalidateQueries({ queryKey: ['periodosCuotas'] });

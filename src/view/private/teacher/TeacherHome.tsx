@@ -99,6 +99,15 @@ export default function TeacherHome() {
             border: "border-amber-100",
             path: "/teacher/justificaciones",
         },
+        {
+            icon: Calendar,
+            label: "Mi Horario",
+            description: "Ver tu rol semanal",
+            color: "text-purple-600",
+            bg: "bg-purple-50",
+            border: "border-purple-100",
+            path: "/teacher/mi-horario",
+        },
     ];
 
     return (
