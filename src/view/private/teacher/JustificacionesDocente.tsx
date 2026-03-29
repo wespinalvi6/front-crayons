@@ -227,13 +227,13 @@ export default function JustificacionesDocente() {
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
-                <thead className="border-b border-slate-200 bg-slate-50/50">
-                  <tr className="text-left text-slate-600">
-                    <th className="px-5 py-2.5 font-semibold">Estudiante</th>
-                    <th className="px-5 py-2.5 font-semibold">Falta Registrada</th>
-                    <th className="px-5 py-2.5 font-semibold">Motivo y Detalle</th>
-                    <th className="px-5 py-2.5 font-semibold text-center">Documento</th>
-                    <th className="px-5 py-2.5 font-semibold text-right pr-12">Acciones</th>
+                <thead className="border-b border-slate-200 bg-slate-50/50 uppercase tracking-tighter">
+                  <tr className="text-left text-slate-500">
+                    <th className="px-4 py-2 font-bold text-[10px]">Estudiante</th>
+                    <th className="px-4 py-2 font-bold text-[10px]">Falta</th>
+                    <th className="px-4 py-2 font-bold text-[10px]">Detalle</th>
+                    <th className="px-4 py-2 font-bold text-[10px] text-center">Documento</th>
+                    <th className="px-4 py-2 font-bold text-[10px] text-right pr-6">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -260,7 +260,7 @@ export default function JustificacionesDocente() {
                         animate={{ opacity: 1 }}
                         className="hover:bg-slate-50/50 transition-colors"
                       >
-                        <td className="px-5 py-3">
+                        <td className="px-4 py-2">
                           <div className="flex flex-col">
                             <span className="font-semibold text-slate-900 leading-tight">
                               {j.nombre_alumno}
@@ -276,7 +276,7 @@ export default function JustificacionesDocente() {
                             </div>
                           </div>
                         </td>
-                        <td className="px-5 py-3">
+                        <td className="px-4 py-2">
                           <div className="flex flex-col max-w-[180px]">
                             {j.fecha_falta ? (
                               <span className="text-[10px] font-semibold text-slate-700">
@@ -290,14 +290,14 @@ export default function JustificacionesDocente() {
                             )}
                           </div>
                         </td>
-                        <td className="px-5 py-3">
+                        <td className="px-4 py-2">
                           <div className="flex flex-col max-w-xs">
                             <span className="text-[9px] font-bold text-amber-600 uppercase tracking-tight">{j.tipo}</span>
                             <span className="text-[11px] font-semibold text-slate-700 truncate">{j.titulo}</span>
                             <p className="text-[10px] text-slate-400 italic truncate font-medium">{j.descripcion}</p>
                           </div>
                         </td>
-                        <td className="px-5 py-3 text-center">
+                        <td className="px-4 py-2 text-center">
                           <a
                             href={j.url_documento}
                             target="_blank"
@@ -307,7 +307,7 @@ export default function JustificacionesDocente() {
                             PDF <ExternalLink size={10} />
                           </a>
                         </td>
-                        <td className="px-5 py-3 text-right">
+                        <td className="px-4 py-2 text-right">
                           <div className="flex justify-end gap-2 pr-8">
                             {j.estado === "Pendiente" ? (
                               <>
@@ -348,45 +348,45 @@ export default function JustificacionesDocente() {
       </div>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-md p-0 overflow-hidden rounded-2xl border-none shadow-2xl">
-          <div className={`p-6 ${accionSeleccionada === "aceptar" ? "bg-emerald-600" : "bg-rose-600"} relative`}>
-            <h3 className="text-white text-lg font-bold tracking-tight">
+        <DialogContent className="max-w-[360px] p-0 overflow-hidden rounded-2xl border-none shadow-2xl">
+          <div className={`p-4 ${accionSeleccionada === "aceptar" ? "bg-emerald-600" : "bg-rose-600"} relative`}>
+            <h3 className="text-white text-base font-bold tracking-tight text-center uppercase">
               {accionSeleccionada === "aceptar" ? "Aprobar Solicitud" : "Rechazar Solicitud"}
             </h3>
-            <p className="text-white/70 text-[10px] font-bold uppercase tracking-widest mt-0.5">Sistema de Gestión Académica</p>
+            <p className="text-white/60 text-[9px] font-bold uppercase tracking-widest mt-0.5 text-center">Gestión Académica</p>
           </div>
-          <div className="p-6 space-y-5">
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Estudiante</span>
-              <p className="text-base font-bold text-slate-800 leading-tight">{justificacionSeleccionada?.nombre_alumno}</p>
+          <div className="p-5 space-y-4">
+            <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100 flex flex-col items-center text-center">
+              <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Estudiante</span>
+              <p className="text-sm font-bold text-slate-800 leading-tight uppercase">{justificacionSeleccionada?.nombre_alumno}</p>
               {justificacionSeleccionada?.grado && (
-                <p className="text-[10px] text-slate-500 mt-0.5">{justificacionSeleccionada.grado} {justificacionSeleccionada.curso && `· ${justificacionSeleccionada.curso}`}</p>
+                <p className="text-[9px] text-slate-500 font-medium mt-0.5">{justificacionSeleccionada.grado} {justificacionSeleccionada.curso && `· ${justificacionSeleccionada.curso}`}</p>
               )}
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Comentario de Revisión</label>
+            <div className="space-y-1">
+              <label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest ml-1">Comentario de Revisión</label>
               <textarea
                 value={comentario}
                 onChange={(e) => setComentario(e.target.value)}
                 placeholder="Indique los motivos de la decisión..."
-                className="w-full min-h-[100px] p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:bg-white focus:border-blue-500 transition-all outline-none resize-none placeholder:text-slate-300"
+                className="w-full min-h-[80px] p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-600 focus:bg-white focus:border-blue-500 transition-all outline-none resize-none placeholder:text-slate-300 shadow-inner"
               />
             </div>
 
-            <div className="flex gap-2 pt-1">
+            <div className="flex gap-2 pb-2">
               <Button
                 variant="outline"
                 onClick={() => setShowDialog(false)}
-                className="flex-1 h-10 border-slate-200 text-slate-500 font-bold text-[10px] uppercase tracking-widest"
+                className="flex-1 h-9 border-slate-200 text-slate-400 font-bold text-[9px] uppercase tracking-widest"
               >
-                Cancelar
+                Cerrar
               </Button>
               <Button
                 onClick={confirmarAccion}
-                className={`flex-1 h-10 font-bold text-[10px] uppercase tracking-widest text-white ${accionSeleccionada === "aceptar" ? "bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-100" : "bg-rose-600 hover:bg-rose-700 shadow-lg shadow-rose-100"}`}
+                className={`flex-1 h-9 font-bold text-[9px] uppercase tracking-widest text-white shadow-md ${accionSeleccionada === "aceptar" ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-100" : "bg-rose-600 hover:bg-rose-700 shadow-rose-100"}`}
               >
-                Confirmar
+                {accionSeleccionada === "aceptar" ? "Aprobar" : "Rechazar"}
               </Button>
             </div>
           </div>

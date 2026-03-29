@@ -291,6 +291,11 @@ export default function ScheduleAssignment() {
   const isFormValid = formOk && bloques.length > 0 && !anyConflict && !anyBadDur;
 
   const handleSlotMouseDown = (dia: string, hora: string) => {
+    // 0. Prevent recess overlap
+    if (toMin(hora) >= toMin("11:00") && toMin(hora) < toMin("11:30")) {
+      return;
+    }
+
     // 1. No permitir si ya hay un bloque para este curso HOY (Regla: una por día)
     if (bloques.some(b => b.dia_semana === dia)) {
       setMessage({ text: `Ya hay una sesión asignada para el ${dia}. Borre la anterior si desea cambiarla.`, isError: true });
@@ -331,7 +336,14 @@ export default function ScheduleAssignment() {
     setHoverSlot(currentSi);
 
     // Update the block's end time in real-time as we drag
-    const newFin = HORAS[currentSi + 1] ?? minToStr(toMin(HORAS[currentSi]) + 15);
+    let newFin = HORAS[currentSi + 1] ?? minToStr(toMin(HORAS[currentSi]) + 15);
+    const startTime = HORAS[dragState.startSlot];
+
+    // Constrain to not cross the recess
+    if (toMin(startTime) <= toMin("11:00") && toMin(newFin) > toMin("11:00")) {
+      newFin = "11:00";
+    }
+
     setBloques(prev => prev.map(b =>
       b.id === dragState.id ? { ...b, hora_fin: newFin } : b
     ));
@@ -558,10 +570,10 @@ export default function ScheduleAssignment() {
                       const dayNuevos = formOk ? bloques.filter(b => b.dia_semana === dia) : [];
 
                       return (
-                        <div key={dia} style={{ position: "relative", borderLeft: "1px solid #e2e8f0" }}>
+                        <div key={dia} style={{ position: "relative", borderLeft: "1px solid #1A1818" }}>
                           {/* Grid Lines */}
                           {HORAS.map((h, i) => (
-                            <div key={h} style={{ position: "absolute", top: timeToTop(h), left: 0, right: 0, height: PX_PER_SLOT, borderBottom: i % 2 === 0 ? "1px dashed #cbd5e1" : "1px solid #e2e8f0", zIndex: 0 }}
+                            <div key={h} style={{ position: "absolute", top: timeToTop(h), left: 0, right: 0, height: PX_PER_SLOT, borderBottom: i % 2 === 0 ? "1px dashed #1A1818" : "1px solid #1A1818", zIndex: 0 }}
                               onMouseDown={() => {
                                 const iso = dayOcupados.some(o => toMin(o.horaInicio) <= toMin(h) && toMin(h) < toMin(o.horaFin));
                                 if (!iso) handleSlotMouseDown(dia, h);
@@ -575,12 +587,35 @@ export default function ScheduleAssignment() {
                             const height = timeToPx(o.horaInicio, o.horaFin);
                             return (
                               <div key={oi} style={{ position: "absolute", top, left: 6, right: 6, height: height - 2, background: o.isGradoConflict ? "#fef3c7" : "#dcfce7", borderLeft: `4px solid ${o.isGradoConflict ? "#f59e0b" : "#10b981"}`, borderRadius: "4px 8px 8px 4px", zIndex: 1, padding: "4px 8px", pointerEvents: "none", boxShadow: "0 2px 4px rgba(0,0,0,0.02)" }}>
-                                <p style={{ margin: 0, fontSize: "9px", fontWeight: 800, color: o.isGradoConflict ? "#92400e" : "#065f46", textTransform: "uppercase" }}>{o.curso.slice(0, 10)}...</p>
+                                <p style={{ margin: 0, fontSize: "9px", fontWeight: 800, color: o.isGradoConflict ? "#92400e" : "#065f46", textTransform: "uppercase", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{o.curso}</p>
                                 <p style={{ margin: "1px 0", fontSize: "8px", fontWeight: 600, color: o.isGradoConflict ? "#b45309" : "#059669" }}>{o.grado}</p>
                                 <p style={{ margin: 0, fontSize: "8px", opacity: 0.8, color: "inherit" }}>{o.horaInicio}-{o.horaFin}</p>
                               </div>
                             );
                           })}
+
+                          {/* Recreo visual block */}
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: timeToTop("11:00"),
+                              height: timeToPx("11:00", "11:30"),
+                              left: 0,
+                              right: 0,
+                              background: "#180469",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              zIndex: 1,
+                              borderTop: "1px solid #e2e8f0",
+                              borderBottom: "1px solid #e2e8f0",
+                              pointerEvents: "none"
+                            }}
+                          >
+                            {dia === "Miercoles" && (
+                              <span style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "1em", color: "#cbd5e1" }}>RECREO</span>
+                            )}
+                          </div>
 
                           {/* Nuevos */}
                           {dayNuevos.map((b) => {

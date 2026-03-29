@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import api from "@/lib/axios";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Calendar, Clock, BookOpen, MapPin, User, Loader2 } from "lucide-react";
@@ -16,34 +16,22 @@ interface HorarioItem {
     seccion: string;
 }
 
-// --- CONFIGURACIÓN DE MATRIX (Igual que en ver-horarios) ---
-type Subject = { id: string; name: string; bgColor: string; textColor: string };
 
-type ClassBlock = {
-    dayIndex: number;
-    startPeriod: number;
-    span: number;
-    subjectId: string;
-    grado: string;
-    seccion: string;
-    aula: string | null;
-    cursoTitle: string;
-};
 
-// Paleta de colores para cursos
+// Paleta de colores para cursos (Sincronizada con ScheduleGrid)
 const COLORS = [
-    { bg: "bg-blue-400", text: "text-black" },
-    { bg: "bg-green-600", text: "text-white" },
-    { bg: "bg-emerald-500", text: "text-white" },
-    { bg: "bg-yellow-300", text: "text-black" },
-    { bg: "bg-purple-600", text: "text-white" },
-    { bg: "bg-red-600", text: "text-white" },
-    { bg: "bg-orange-200", text: "text-orange-900" },
-    { bg: "bg-pink-300", text: "text-black" },
-    { bg: "bg-teal-400", text: "text-black" },
-    { bg: "bg-indigo-400", text: "text-white" },
-    { bg: "bg-cyan-600", text: "text-white" },
-    { bg: "bg-lime-400", text: "text-black" },
+    { bg: "bg-blue-400", text: "text-black", border: "border-blue-500" },
+    { bg: "bg-green-600", text: "text-white", border: "border-green-700" },
+    { bg: "bg-emerald-500", text: "text-white", border: "border-emerald-600" },
+    { bg: "bg-yellow-300", text: "text-black", border: "border-yellow-500" },
+    { bg: "bg-purple-600", text: "text-white", border: "border-purple-800" },
+    { bg: "bg-red-600", text: "text-white", border: "border-red-800" },
+    { bg: "bg-orange-200", text: "text-orange-900", border: "border-orange-400" },
+    { bg: "bg-pink-300", text: "text-black", border: "border-pink-500" },
+    { bg: "bg-teal-400", text: "text-black", border: "border-teal-600" },
+    { bg: "bg-indigo-400", text: "text-white", border: "border-indigo-600" },
+    { bg: "bg-cyan-600", text: "text-white", border: "border-cyan-800" },
+    { bg: "bg-lime-400", text: "text-black", border: "border-lime-600" },
 ];
 
 function getSubjectColor(str: string) {
@@ -52,34 +40,43 @@ function getSubjectColor(str: string) {
         hash = str.charCodeAt(i) + ((hash << 5) - hash);
     }
     const index = Math.abs(hash) % COLORS.length;
-    const c = COLORS[index];
-    return { bgColor: c.bg, textColor: c.text };
+    return COLORS[index];
 }
 
 const DAYS = ["LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES"];
-const DIA_A_INDEX: Record<string, number> = {
-    Lunes: 0,
-    Martes: 1,
-    Miercoles: 2,
-    Jueves: 3,
-    Viernes: 4,
+const DIAS_SHORT = ["LU", "MA", "MI", "JU", "VI"];
+
+// Generar horas en intervalos de 15 min (7:00 a 15:00 para docentes)
+const HORAS: string[] = [];
+for (let h = 7; h < 15; h++) {
+    HORAS.push(`${String(h).padStart(2, "0")}:00`);
+    HORAS.push(`${String(h).padStart(2, "0")}:15`);
+    HORAS.push(`${String(h).padStart(2, "0")}:30`);
+    HORAS.push(`${String(h).padStart(2, "0")}:45`);
+}
+
+const PX_PER_SLOT = 24;
+const START_MIN = 7 * 60; // 07:00
+
+const toMin = (h: string) => {
+    if (!h) return 0;
+    const [hh, mm] = h.split(":").map(Number);
+    return hh * 60 + (mm || 0);
 };
 
-const TIME_PERIODS = [
-    { id: 1, time: "08:00" },
-    { id: 2, time: "08:30" },
-    { id: 3, time: "09:00" },
-    { id: 4, time: "09:30" },
-    // 10:00 - 10:30 RECREO
-    { id: 5, time: "10:30" },
-    { id: 6, time: "11:00" },
-    { id: 7, time: "11:30" },
-    { id: 8, time: "12:00" },
-    { id: 9, time: "12:30" },
-    { id: 10, time: "13:00" },
-    { id: 11, time: "13:30" },
-];
-const START_MINUTES = 8 * 60; // 08:00
+const timeToTop = (t: string) => ((toMin(t) - START_MIN) / 15) * PX_PER_SLOT;
+const timeToPx = (start: string, end: string) =>
+    Math.max(((toMin(end) - toMin(start)) / 15) * PX_PER_SLOT, 1);
+
+const TOTAL_H = (HORAS.length - 1) * PX_PER_SLOT;
+
+const DIA_A_LABEL: Record<string, string> = {
+    Lunes: "LUNES",
+    Martes: "MARTES",
+    Miercoles: "MIERCOLES",
+    Jueves: "JUEVES",
+    Viernes: "VIERNES",
+};
 
 export default function MySchedule() {
     const [horarios, setHorarios] = useState<HorarioItem[]>([]);
@@ -101,69 +98,26 @@ export default function MySchedule() {
         fetchHorario();
     }, []);
 
-    const { SUBJECTS, SCHEDULE_DATA } = useMemo(() => {
-        const sMap: Record<string, Subject> = {};
-        const schedule: ClassBlock[] = [];
+    const blocks = useMemo(() => {
+        return horarios.map((r, i) => {
+            const color = getSubjectColor(r.curso);
+            const diaClean = DIA_A_LABEL[r.dia_semana] || "LUNES";
 
-        horarios.forEach((r) => {
-            const dayIndex = DIA_A_INDEX[r.dia_semana];
-            if (dayIndex === undefined || dayIndex > 4) return; // Solo Lun-Vie
-
-            const [hInicioStr, mInicioStr] = String(r.hora_inicio).split(":");
-            const [hFinStr, mFinStr] = String(r.hora_fin).split(":");
-
-            const startMinTotal = parseInt(hInicioStr) * 60 + parseInt(mInicioStr);
-            const endMinTotal = parseInt(hFinStr) * 60 + parseInt(mFinStr);
-
-            const startPeriod = Math.floor((startMinTotal - START_MINUTES) / 30);
-            const span = Math.ceil((endMinTotal - startMinTotal) / 30);
-
-            const cursoId = r.curso;
-            if (!sMap[cursoId]) {
-                const color = getSubjectColor(cursoId);
-                sMap[cursoId] = {
-                    id: cursoId,
-                    name: r.curso,
-                    bgColor: color.bgColor,
-                    textColor: color.textColor,
-                };
-            }
-
-            schedule.push({
-                dayIndex,
-                startPeriod,
-                span,
-                subjectId: cursoId,
+            return {
+                id: r.id_horario || i,
+                dia: diaClean,
+                horaInicio: r.hora_inicio.slice(0, 5),
+                horaFin: r.hora_fin.slice(0, 5),
+                curso: r.curso,
                 grado: r.grado,
                 seccion: r.seccion,
                 aula: r.aula,
-                cursoTitle: r.curso,
-            });
+                bgColor: color.bg,
+                textColor: color.text,
+                borderColor: color.border
+            };
         });
-
-        return { SUBJECTS: sMap, SCHEDULE_DATA: schedule };
     }, [horarios]);
-
-    // Construir matriz
-    const grid = useMemo(() => {
-        const matrix: any[][] = Array.from({ length: Math.max(TIME_PERIODS.length, 12) }, () => Array(DAYS.length).fill(null));
-
-        SCHEDULE_DATA.forEach((block) => {
-            const { dayIndex, startPeriod, span, subjectId } = block;
-            const subject = SUBJECTS[subjectId];
-
-            if (!subject || startPeriod < 0 || startPeriod >= matrix.length) return;
-
-            matrix[startPeriod][dayIndex] = { type: "cell", span, subject, block };
-
-            for (let i = 1; i < span; i++) {
-                if (startPeriod + i < matrix.length) {
-                    matrix[startPeriod + i][dayIndex] = { type: "covered" };
-                }
-            }
-        });
-        return matrix;
-    }, [SCHEDULE_DATA, SUBJECTS]);
 
     return (
         <div className="flex-1 flex flex-col bg-slate-50 min-h-screen">
@@ -195,93 +149,113 @@ export default function MySchedule() {
                     </div>
                 ) : (
                     <>
-                        <div className="overflow-x-auto shadow-xl rounded-lg border-2 border-gray-400 bg-white">
-                            <table className="w-full table-fixed border-collapse min-w-[900px]">
-                                <thead>
-                                    <tr>
-                                        <th className="w-20 bg-white border-b border-gray-200 py-3 font-bold text-gray-500 uppercase text-right pr-4">
-                                            Hora
-                                        </th>
-                                        {DAYS.map((day) => (
-                                            <th
-                                                key={day}
-                                                className="bg-gray-100 border-b-2 border-r-2 border-white py-3 font-black text-gray-800 tracking-wider"
-                                            >
-                                                {day}
-                                            </th>
+                        <div className="bg-white border rounded-[16px] shadow-sm overflow-hidden mb-6" style={{ border: "1px solid #f1f5f9" }}>
+                            <div style={{ overflowX: "auto" }}>
+                                <div style={{ minWidth: "800px", padding: "16px" }}>
+
+                                    {/* Headers */}
+                                    <div style={{ display: "flex", borderBottom: "1px solid #f1f5f9", position: "sticky", top: 0, zIndex: 10, background: "#fff", paddingBottom: "12px" }}>
+                                        <div style={{ width: 60, flexShrink: 0 }} />
+                                        {DAYS.map((dia, di) => (
+                                            <div key={dia} style={{ flex: 1, textAlign: "center", borderLeft: "1px solid #e2e8f0" }}>
+                                                <p style={{ margin: 0, fontSize: "11px", fontWeight: 600, color: "#94a3b8", textTransform: "uppercase" }}>{dia.slice(0, 3)}</p>
+                                                <p style={{ margin: "2px 0 0", fontSize: "14px", fontWeight: 800, color: "#1e293b" }}>{DIAS_SHORT[di]}</p>
+                                            </div>
                                         ))}
-                                    </tr>
-                                </thead>
+                                    </div>
 
-                                <tbody>
-                                    {TIME_PERIODS.map((period, periodIndex) => {
-                                        const showRecreo = periodIndex === 4;
+                                    <div style={{ display: "flex", position: "relative" }}>
+                                        {/* Axis Horas */}
+                                        <div style={{ width: 60, flexShrink: 0, position: "relative", height: TOTAL_H, borderRight: "1px solid #e2e8f0" }}>
+                                            {HORAS.map((h, hi) => (
+                                                (h.endsWith(":00") || h.endsWith(":30")) && hi < HORAS.length - 1 && (
+                                                    <div key={h} style={{ position: "absolute", top: timeToTop(h) - 7, left: 0, right: 8, display: "flex", justifyContent: "flex-end", fontSize: "11px", fontWeight: 700, color: "#64748b" }}>{h}</div>
+                                                )
+                                            ))}
+                                        </div>
 
-                                        return (
-                                            <React.Fragment key={period.id}>
-                                                {showRecreo && (
-                                                    <tr className="bg-white">
-                                                        <td className="bg-white border-b border-gray-200 text-right pr-4 text-sm font-bold text-slate-500 align-middle py-4 w-20">
-                                                            10:00
-                                                        </td>
-                                                        <td
-                                                            colSpan={5}
-                                                            className="border-b-2 border-gray-400 text-center py-2 font-black tracking-[0.8em] text-gray-700 bg-gray-50 uppercase"
+                                        {/* Columns grid */}
+                                        <div style={{ flex: 1, display: "grid", gridTemplateColumns: "repeat(5, 1fr)", background: "#fff" }}>
+                                            {DAYS.map((dia) => {
+                                                const dayBlocks = blocks.filter(b => b.dia === dia);
+
+                                                return (
+                                                    <div key={dia} style={{ position: "relative", borderLeft: "1px solid #1A1818" }}>
+                                                        {/* Grid Lines */}
+                                                        {HORAS.map((h, i) => (
+                                                            <div key={h} style={{ position: "absolute", top: timeToTop(h), left: 0, right: 0, height: PX_PER_SLOT, borderBottom: i % 2 === 0 ? "1px dashed #1A1818" : "1px solid #1A1818", zIndex: 0 }} />
+                                                        ))}
+
+                                                        {/* Recreo visual block */}
+                                                        <div
+                                                            style={{
+                                                                position: "absolute",
+                                                                top: timeToTop("11:00"),
+                                                                height: timeToPx("11:00", "11:30"),
+                                                                left: 0,
+                                                                right: 0,
+                                                                background: "#180469",
+                                                                display: "flex",
+                                                                alignItems: "center",
+                                                                justifyContent: "center",
+                                                                zIndex: 1,
+                                                                borderTop: "1px solid #e2e8f0",
+                                                                borderBottom: "1px solid #e2e8f0",
+                                                                pointerEvents: "none"
+                                                            }}
                                                         >
-                                                            Recreo
-                                                        </td>
-                                                    </tr>
-                                                )}
+                                                            {dia === "MIERCOLES" && (
+                                                                <span style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "1em", color: "#cbd5e1" }}>RECREO</span>
+                                                            )}
+                                                        </div>
 
-                                                <tr>
-                                                    <td className="bg-white border-b border-gray-200 text-right pr-4 text-sm font-bold text-slate-500 align-top pt-4 w-20">
-                                                        {period.time}
-                                                    </td>
+                                                        {/* Blocks */}
+                                                        {dayBlocks.map((b, bi) => {
+                                                            const top = timeToTop(b.horaInicio);
+                                                            const height = timeToPx(b.horaInicio, b.horaFin);
 
-                                                    {DAYS.map((_, dayIndex) => {
-                                                        const cellData = grid[periodIndex]?.[dayIndex];
-
-                                                        if (cellData?.type === "covered") return null;
-
-                                                        if (cellData?.type === "cell") {
-                                                            const bData = cellData.block as ClassBlock;
                                                             return (
-                                                                <td
-                                                                    key={`${periodIndex}-${dayIndex}`}
-                                                                    rowSpan={cellData.span}
-                                                                    className={`border-b-2 border-r-2 border-gray-400 p-3 text-center transition-colors hover:brightness-110 ${cellData.subject.bgColor} ${cellData.subject.textColor}`}
+                                                                <div
+                                                                    key={b.id + "-" + bi}
+                                                                    className={`${b.bgColor} ${b.textColor} absolute shadow hover:brightness-110 transition-colors duration-200 border-l-4 ${b.borderColor}`}
+                                                                    style={{
+                                                                        top,
+                                                                        left: 4,
+                                                                        right: 4,
+                                                                        height: height - 2,
+                                                                        borderRadius: "4px 8px 8px 4px",
+                                                                        zIndex: 2,
+                                                                        padding: "4px 8px",
+                                                                        overflow: 'hidden'
+                                                                    }}
                                                                 >
-                                                                    <div className="flex flex-col items-center justify-center h-full space-y-1">
-                                                                        <span className="font-bold text-sm md:text-base leading-tight">
-                                                                            {cellData.subject.name}
+                                                                    <div className="flex flex-col h-full items-start justify-start space-y-0.5">
+                                                                        <span className="font-extrabold text-[10px] leading-tight md:text-xs">
+                                                                            {b.curso}
                                                                         </span>
-                                                                        <span className="text-xs opacity-90 font-medium">
-                                                                            {bData.grado} {bData.seccion}
-                                                                        </span>
-                                                                        {bData.aula && (
-                                                                            <span className="text-[10px] opacity-80 mt-1 flex items-center justify-center gap-1">
-                                                                                <MapPin size={10} />
-                                                                                {bData.aula}
+                                                                        {b.grado && b.seccion && (
+                                                                            <span className="text-[9px] opacity-80 font-bold uppercase flex items-center gap-1 mt-1">
+                                                                                <User size={10} />
+                                                                                {b.grado} {b.seccion}
+                                                                            </span>
+                                                                        )}
+                                                                        {b.aula && (
+                                                                            <span className="text-[8px] opacity-80 font-bold uppercase flex items-center gap-1 mt-0.5">
+                                                                                <MapPin size={8} />
+                                                                                {b.aula}
                                                                             </span>
                                                                         )}
                                                                     </div>
-                                                                </td>
+                                                                </div>
                                                             );
-                                                        }
-
-                                                        return (
-                                                            <td
-                                                                key={`${periodIndex}-${dayIndex}`}
-                                                                className="border-b-2 border-r-2 border-gray-400 bg-white group-hover:bg-slate-50/50 transition-colors"
-                                                            ></td>
-                                                        );
-                                                    })}
-                                                </tr>
-                                            </React.Fragment>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
+                                                        })}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -17,13 +17,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import axios from "axios";
-import EditarDatosButton from "@/components/EditarDatosButton";
 import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { Loader2, UserX, UserPlus, AlertCircle, AlertTriangle, CheckCircle2, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+const API_URL = import.meta.env.VITE_API_URL;
 
 interface Periodo {
   id: number;
@@ -37,6 +36,7 @@ type Apoderado = {
   apellido_paterno: string;
   apellido_materno: string;
   telefono: string | null;
+  email: string | null;
   parentesco: string;
 };
 
@@ -500,7 +500,7 @@ export default function ListStudent() {
 }
 
 // Subcomponente para organizar el Fragment/Rows y evitar problemas de Key
-function CardGroup({ student, showParent, setShowParent, updateStudentInList, handleToggleEstado, disabled }: any) {
+function CardGroup({ student, showParent, setShowParent, handleToggleEstado, disabled }: any) {
   const isRetirado = student.estado === 'Retirado';
   const isEgresado = student.estado === 'Egresado';
 
@@ -571,23 +571,7 @@ function CardGroup({ student, showParent, setShowParent, updateStudentInList, ha
             {isRetirado ? "Habilitar" : "Dar de baja"}
           </Button>
 
-          <EditarDatosButton
-            variant="outline"
-            size="sm"
-            disabled={disabled}
-            className={`text-[#3E328C] border-[#3E328C] hover:bg-[#3E328C] hover:text-white ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-            alumnoId={student.alumno_id}
-            alumnoData={{
-              dni: student.alumno_dni,
-              nombre: student.alumno_nombre,
-              ap_p: student.alumno_apellido_paterno,
-              ap_m: student.alumno_apellido_materno,
-              fecha_nacimiento: student.fecha_nacimiento
-            }}
-            onDataUpdated={updateStudentInList}
-          >
-            Editar
-          </EditarDatosButton>
+
         </TableCell>
       </TableRow>
 
@@ -613,6 +597,9 @@ function CardGroup({ student, showParent, setShowParent, updateStudentInList, ha
 
                         <span className="text-slate-600 font-medium">Teléfono:</span>
                         <span>{apoderado.telefono || "No registrado"}</span>
+
+                        <span className="text-slate-600 font-medium">Correo:</span>
+                        <span>{apoderado.email || "No registrado"}</span>
                       </div>
                     </div>
                   ))}

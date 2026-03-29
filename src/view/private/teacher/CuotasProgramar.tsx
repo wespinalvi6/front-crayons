@@ -29,7 +29,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+const API_URL = import.meta.env.VITE_API_URL;
 import { Edit, Trash2, Plus, Loader2, AlertCircle, AlertTriangle, CheckCircle2, X } from "lucide-react";
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';

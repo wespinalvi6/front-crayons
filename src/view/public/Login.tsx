@@ -4,7 +4,7 @@ import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 import { User, Lock, Eye, EyeOff, Loader2, ArrowRight } from "lucide-react";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+const API_URL = import.meta.env.VITE_API_URL;
 
 // Constantes para rate limiting
 const MAX_LOGIN_ATTEMPTS = 5;

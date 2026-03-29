@@ -17,7 +17,7 @@ import axios, { AxiosError } from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { FileText, RefreshCw, Loader2, Search, CheckCircle2, ChevronLeft } from "lucide-react";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+const API_URL = import.meta.env.VITE_API_URL;
 
 const steps = [
   { id: 1, title: "Estudiante" },
@@ -65,6 +65,7 @@ interface FormData {
   padre_fecha_nacimiento: string;
   padre_telefono: string;
   padre_ocupacion: string;
+  padre_email: string;
 
   // Madre
   madre_dni: string;
@@ -74,6 +75,7 @@ interface FormData {
   madre_fecha_nacimiento: string;
   madre_telefono: string;
   madre_ocupacion: string;
+  madre_email: string;
 
   // Apoderado (Principal)
   apoderado_dni: string;
@@ -146,6 +148,7 @@ export default function RegisterStudent() {
     padre_fecha_nacimiento: "",
     padre_telefono: "",
     padre_ocupacion: "",
+    padre_email: "",
 
     // Madre
     madre_dni: "",
@@ -155,6 +158,7 @@ export default function RegisterStudent() {
     madre_fecha_nacimiento: "",
     madre_telefono: "",
     madre_ocupacion: "",
+    madre_email: "",
 
     // Apoderado
     apoderado_dni: "",
@@ -322,12 +326,9 @@ export default function RegisterStudent() {
       case 'tipo_ingreso':
         if (!stringValue) return 'Este campo es obligatorio';
         return '';
-      case 'alumno_email':
-        if (!stringValue) return 'El email del alumno es obligatorio';
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(stringValue)) return 'Formato de email inválido';
-        return '';
       case 'alumno_religion':
       case 'alumno_lengua_materna':
+      case 'alumno_email': // Ya no es obligatorio
         return '';
       // Family fields (Required if section is used, but we validate at submit. Let's keep basic required if typed)
       case 'padre_nombre':
@@ -340,6 +341,11 @@ export default function RegisterStudent() {
       case 'madre_fecha_nacimiento':
       case 'año_academico':
         if (!stringValue) return 'Este campo es obligatorio';
+        return '';
+      case 'padre_email':
+      case 'madre_email':
+        if (!stringValue) return 'El correo del apoderado es obligatorio';
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(stringValue)) return 'Formato de email inválido';
         return '';
       // Optional family fields
       case 'padre_ocupacion':
@@ -368,7 +374,7 @@ export default function RegisterStudent() {
     if (currentStep === 0) {
       const requiredFields = [
         'alumno_dni', 'alumno_nombre', 'alumno_ap_p', 'alumno_ap_m',
-        'alumno_fecha_nacimiento', 'alumno_sexo', 'alumno_email',
+        'alumno_fecha_nacimiento', 'alumno_sexo',
         'alumno_direccion', 'id_grado', 'tipo_ingreso'
       ];
       requiredFields.forEach(field => {
@@ -388,7 +394,7 @@ export default function RegisterStudent() {
         isValid = false;
       } else {
         const prefix = hasPadre ? 'padre' : 'madre';
-        const fields = [`${prefix}_dni`, `${prefix}_nombre`, `${prefix}_ap_p`, `${prefix}_ap_m`, `${prefix}_fecha_nacimiento`, `${prefix}_telefono`];
+        const fields = [`${prefix}_dni`, `${prefix}_nombre`, `${prefix}_ap_p`, `${prefix}_ap_m`, `${prefix}_fecha_nacimiento`, `${prefix}_telefono`, `${prefix}_email`];
         fields.forEach(field => {
           const error = validateField(field, formData[field]);
           if (error) {
@@ -694,11 +700,10 @@ export default function RegisterStudent() {
       !formData.alumno_nombre ||
       !formData.alumno_ap_p ||
       !formData.alumno_ap_m ||
-      !formData.alumno_fecha_nacimiento ||
-      !formData.alumno_email
+      !formData.alumno_fecha_nacimiento
     ) {
       setMessage({
-        text: "Complete todos los campos obligatorios del alumno (incluyendo email)",
+        text: "Complete todos los campos obligatorios del alumno",
         isError: true,
       });
       return;
@@ -748,7 +753,6 @@ export default function RegisterStudent() {
           apellido_paterno: formData.alumno_ap_p,
           apellido_materno: formData.alumno_ap_m,
           fecha_nacimiento: formData.alumno_fecha_nacimiento,
-          email: formData.alumno_email,
           sexo: formData.alumno_sexo,
           lengua_materna: formData.alumno_lengua_materna,
           tipo_ingreso: formData.tipo_ingreso,
@@ -766,7 +770,8 @@ export default function RegisterStudent() {
           apellido_materno: formData.padre_ap_m,
           fecha_nacimiento: formData.padre_fecha_nacimiento,
           telefono: formData.padre_telefono,
-          ocupacion: formData.padre_ocupacion
+          ocupacion: formData.padre_ocupacion,
+          email: formData.padre_email
         },
         madre: {
           dni: formData.madre_dni,
@@ -775,7 +780,8 @@ export default function RegisterStudent() {
           apellido_materno: formData.madre_ap_m,
           fecha_nacimiento: formData.madre_fecha_nacimiento,
           telefono: formData.madre_telefono,
-          ocupacion: formData.madre_ocupacion
+          ocupacion: formData.madre_ocupacion,
+          email: formData.madre_email
         },
         economica: {
           precio_matricula: Number(formData.matricula_precio),
@@ -838,6 +844,7 @@ export default function RegisterStudent() {
         padre_fecha_nacimiento: "",
         padre_telefono: "",
         padre_ocupacion: "",
+        padre_email: "",
         madre_dni: "",
         madre_nombre: "",
         madre_ap_p: "",
@@ -845,6 +852,7 @@ export default function RegisterStudent() {
         madre_fecha_nacimiento: "",
         madre_telefono: "",
         madre_ocupacion: "",
+        madre_email: "",
         apoderado_dni: "",
         apoderado_nombre: "",
         apoderado_ap_p: "",
@@ -1002,14 +1010,13 @@ export default function RegisterStudent() {
                 {renderInput("alumno_ap_p", "Apellido Paterno")}
                 {renderInput("alumno_ap_m", "Apellido Materno")}
               </div>
-              {/* Fecha, Sexo, Email */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Fecha, Sexo */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {renderInput("alumno_fecha_nacimiento", "Fecha de Nacimiento", "date")}
                 {renderSelect("alumno_sexo", "Sexo", [
                   { value: "M", label: "Masculino" },
                   { value: "F", label: "Femenino" },
                 ])}
-                {renderInput("alumno_email", "Email", "email", "ejemplo@correo.com")}
               </div>
               {/* Dirección, Lengua, Religión */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -1190,6 +1197,28 @@ export default function RegisterStudent() {
                     value={formData[`${activeTab}_ocupacion`] as string}
                     onChange={(e) => handleInputChange({ target: { name: `${activeTab}_ocupacion`, value: e.target.value } } as any)}
                   />
+                </div>
+              </div>
+
+              {/* Correo Electrónico */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-xs font-medium text-slate-700">
+                    Correo Electrónico <span className="text-red-500"> *</span>
+                  </Label>
+                  <Input
+                    type="email"
+                    placeholder="ejemplo@correo.com"
+                    className={clsx(
+                      "mt-1 h-9",
+                      errors[`${activeTab}_email`] && "border-red-500"
+                    )}
+                    value={formData[`${activeTab}_email`] as string}
+                    onChange={(e) => handleInputChange({ target: { name: `${activeTab}_email`, value: e.target.value } } as any)}
+                  />
+                  {errors[`${activeTab}_email`] && (
+                    <p className="text-xs text-red-600 mt-0.5">{errors[`${activeTab}_email`]}</p>
+                  )}
                 </div>
               </div>
             </div>

@@ -26,7 +26,7 @@ import { Search, Loader2, AlertCircle, AlertTriangle, CheckCircle2, X } from "lu
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+const API_URL = import.meta.env.VITE_API_URL;
 
 interface CursoAsignado {
   idCurso: number;

@@ -24,7 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+const API_URL = import.meta.env.VITE_API_URL;
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const navigate = useNavigate();

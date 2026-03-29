@@ -336,11 +336,34 @@ export default function ScheduleGrid() {
                         const dayBlocks = blocks.filter(b => b.dia === dia);
 
                         return (
-                          <div key={dia} style={{ position: "relative", borderLeft: "1px solid #e2e8f0" }}>
+                          <div key={dia} style={{ position: "relative", borderLeft: "1px solid #1A1818" }}>
                             {/* Grid Lines */}
                             {HORAS.map((h, i) => (
-                              <div key={h} style={{ position: "absolute", top: timeToTop(h), left: 0, right: 0, height: PX_PER_SLOT, borderBottom: i % 2 === 0 ? "1px dashed #cbd5e1" : "1px solid #e2e8f0", zIndex: 0 }} />
+                              <div key={h} style={{ position: "absolute", top: timeToTop(h), left: 0, right: 0, height: PX_PER_SLOT, borderBottom: i % 2 === 0 ? "1px dashed #1A1818" : "1px solid #1A1818", zIndex: 0 }} />
                             ))}
+
+                            {/* Recreo visual block */}
+                            <div
+                              style={{
+                                position: "absolute",
+                                top: timeToTop("11:00"),
+                                height: timeToPx("11:00", "11:30"),
+                                left: 0,
+                                right: 0,
+                                background: "#180469",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                zIndex: 1,
+                                borderTop: "1px solid #e2e8f0",
+                                borderBottom: "1px solid #e2e8f0",
+                                pointerEvents: "none"
+                              }}
+                            >
+                              {dia === "Miercoles" && (
+                                <span style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "1em", color: "#cbd5e1" }}>RECREO</span>
+                              )}
+                            </div>
 
                             {/* Blocks */}
                             {dayBlocks.map((b, bi) => {
